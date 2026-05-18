@@ -61,12 +61,12 @@ Most people have no idea when their oil was last changed or when their next serv
 
 ## Getting Started
 
-*Setup instructions will be added once the tech stack is finalized.*
+*Build/run instructions will be added once the tech stack is finalized.*
 
 ```bash
 # Clone the repo
-git clone https://github.com/[org]/pit-stop.git
-cd pit-stop
+git clone https://github.com/team-PitStop/PitStop.git
+cd PitStop
 
 # Install dependencies
 # (instructions TBD)
@@ -74,6 +74,40 @@ cd pit-stop
 # Run locally
 # (instructions TBD)
 ```
+
+---
+
+## Team Workflow
+
+`main` is protected — **no one pushes to it directly**. All work happens on a
+branch and merges into `main` through a Pull Request with one approval.
+
+```bash
+# 1. Start from the latest main
+git checkout main
+git pull origin main
+
+# 2. Create a branch for your task
+git checkout -b yourname/short-task-name
+
+# 3. Work, then commit and push the branch
+git add .
+git commit -m "Describe what you did"
+git push -u origin yourname/short-task-name
+
+# 4. Open a Pull Request on GitHub.
+#    A teammate reviews and approves it, then it merges into main.
+
+# 5. If main moved while you worked, refresh your branch before merging:
+git checkout main && git pull origin main
+git checkout yourname/short-task-name
+git merge main
+```
+
+**Rules**
+- One approving review (from someone other than the author) is required to merge.
+- Never force-push or delete `main`.
+- Always `git pull origin main` before starting something new.
 
 ---
 
