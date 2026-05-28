@@ -4,10 +4,12 @@ import com.pitstop.backend.user.User;
 import com.pitstop.backend.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -16,6 +18,9 @@ public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private JwtService jwtService;
 
     // Use BCrypt to hide passwords from plain sight (Security Requirement)
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -46,5 +51,29 @@ public class AuthController {
         userRepository.save(newUser);
 
         return ResponseEntity.ok(Map.of("message", "User registered successfully!"));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String password = request.get("password");
+
+        // Look up the user, then check the password against the stored BCrypt hash.
+        // On any failure we return the SAME generic 401 so we don't reveal whether the
+        // email exists (avoids handing attackers a way to enumerate accounts).
+        Optional<User> user = email == null ? Optional.empty() : userRepository.findByEmail(email);
+        if (user.isEmpty() || password == null
+                || !passwordEncoder.matches(password, user.get().getPasswordHash())) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid email or password"));
+        }
+
+        String token = jwtService.generateToken(user.get().getEmail());
+        return ResponseEntity.ok(Map.of("token", token, "email", user.get().getEmail()));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> me(Authentication authentication) {
+        // JwtAuthFilter stores the email as the authentication name when the token is valid.
+        return ResponseEntity.ok(Map.of("email", authentication.getName()));
     }
 }
