@@ -1,6 +1,8 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import Register from "./Register";
+import Login from "./Login";
+import Dashboard from "./Dashboard";
 import EditVehicleForm from "./EditVehicleForm";
 
 function App() {
@@ -8,8 +10,15 @@ function App() {
     <BrowserRouter>
       <div className="App">
         <Routes>
-          {/* Existing route - Miguel's Register page */}
-          <Route path="/" element={<Register />} />
+          {/* Default: redirect to login */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+
+          {/* US-2: Login and Dashboard */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+
+          {/* US-1: Register */}
+          <Route path="/register" element={<Register />} />
 
           {/* US-5: Edit Vehicle route */}
           <Route path="/vehicles/:id/edit" element={<EditVehicleForm />} />

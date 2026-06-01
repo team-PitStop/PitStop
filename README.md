@@ -38,11 +38,10 @@ Most people have no idea when their oil was last changed or when their next serv
 
 ## Tech Stack
 
-*To be decided by the team during Sprint 1.*
-
-- **Frontend:** TBD
-- **Backend:** TBD
-- **Database:** TBD
+- **Frontend:** React 19 + Vite, React Router v7, Axios
+- **Backend:** Java 21, Spring Boot 3, Spring Security (stateless JWT)
+- **Database:** PostgreSQL 17, Flyway migrations
+- **Auth:** JWT (jjwt 0.12), BCrypt password hashing
 - **Hosting:** TBD
 
 ---
@@ -61,19 +60,49 @@ Most people have no idea when their oil was last changed or when their next serv
 
 ## Getting Started
 
-*Build/run instructions will be added once the tech stack is finalized.*
+### Prerequisites
+
+- Java 21+
+- Maven 3.9+
+- Node.js 18+ and npm
+- PostgreSQL 17 running locally
+
+### Database setup
 
 ```bash
-# Clone the repo
-git clone https://github.com/team-PitStop/PitStop.git
-cd PitStop
-
-# Install dependencies
-# (instructions TBD)
-
-# Run locally
-# (instructions TBD)
+psql -c "CREATE DATABASE pitstop;"
 ```
+
+See `docs/database-setup.md` for full setup instructions (user permissions, teammates' environments).
+
+### Backend
+
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+The API starts on `http://localhost:8080`. Flyway runs migrations automatically on startup.
+
+To override the default DB credentials or JWT secret:
+
+```bash
+DB_USER=myuser DB_PASSWORD=mypass JWT_SECRET=my-secret ./mvnw spring-boot:run
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+The app opens at `http://localhost:5173`.
+
+### Running the full app
+
+Start the backend first, then the frontend. Register an account at `/register`, then log in at `/login`.
 
 ---
 
