@@ -41,6 +41,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public: you don't have a token yet when you register or log in.
                 .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+                // Public: vehicle grid viewing doesn't require authentication
+                .requestMatchers("/api/vehicles/grid", "/api/vehicles").permitAll()
                 // Everything else (e.g. /api/auth/me) needs a valid token.
                 .anyRequest().authenticated()
             )

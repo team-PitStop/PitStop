@@ -19,6 +19,18 @@ public class VehicleController {
         return repo.findAll();
     }
 
+    // ============================================================
+    // US-4: GET vehicles in grid format
+    // ============================================================
+    // Returns a list of vehicles with only essential information
+    // (id, year, make, model, mileage) optimized for grid display.
+    @GetMapping("/grid")
+    public List<VehicleGridDTO> getVehicleGrid() {
+        return repo.findAll().stream()
+                .map(VehicleGridDTO::new)
+                .toList();
+    }
+
     @PostMapping
     public Vehicle add(@RequestBody Vehicle vehicle) {
         return repo.save(vehicle);
