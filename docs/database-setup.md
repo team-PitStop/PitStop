@@ -67,12 +67,28 @@ Download the PostgreSQL **17** installer from
 - keep the default port **5432**, and
 - **remember the password** you set for the `postgres` user — you'll need it in step 4.
 
+> **Stack Builder:** When the installer finishes, Stack Builder opens automatically.
+> Close it or click Cancel — none of the add-ons it offers are needed for this project.
+> Spring Boot pulls the PostgreSQL driver in automatically via `pom.xml`.
+
 ### Linux (Debian/Ubuntu)
 
 ```bash
 sudo apt install postgresql-17
 sudo systemctl enable --now postgresql
 ```
+
+### Verify Postgres is running
+
+After installation, run this in your terminal:
+
+```bash
+pg_isready
+```
+
+You should see `localhost:5432 - accepting connections`. This confirms PostgreSQL is
+running — it does **not** mean the `pitstop` database exists yet. You still need to
+create it in the next step.
 
 ---
 
@@ -84,6 +100,14 @@ drawers yet. The app adds the drawers for you later.
 ```bash
 createdb pitstop
 ```
+
+**Windows alternative (pgAdmin):** If you prefer the GUI, open pgAdmin → expand
+**Servers → PostgreSQL → Databases** → right-click **Databases** → **Create →
+Database...** → set the name to `pitstop` → click **Save**.
+
+> The database name must match exactly what's in `application.properties` —
+> `spring.datasource.url=jdbc:postgresql://localhost:5432/pitstop`. If the names
+> don't match, the app will fail to connect.
 
 That's the whole step. Optionally, check you can connect to it:
 
@@ -134,9 +158,18 @@ Whether you need to do anything here depends on your OS:
 - **macOS / Linux (Homebrew/apt):** nothing to do. The install creates a database user
   named after your computer login, with no password and local access already trusted, so
   it just works.
-- **Windows (or any custom setup):** tell the backend which username/password to use by
-  setting two **environment variables** (temporary settings for your terminal session)
-  *before* starting it:
+- **Windows (or any custom setup):** the installer always creates a superuser named
+  `postgres` — so `DB_USER=postgres` is always correct on Windows. The password is
+  whatever you set during installation in step 1. Tell the backend those credentials by
+  setting two **environment variables** before starting it.
+
+  The cleanest way on Windows is to save them permanently so you never have to type
+  them again: search **"Environment Variables"** in the Start menu → **Edit the system
+  environment variables** → **Environment Variables...** → under **User variables**,
+  add `DB_USER` (value: `postgres`) and `DB_PASSWORD` (value: your password). Do not
+  include quotes — just the plain value. Restart your terminal and IDE after saving.
+
+  Or set them for just the current session:
 
   ```bash
   # macOS/Linux
@@ -148,7 +181,24 @@ Whether you need to do anything here depends on your OS:
   $env:DB_PASSWORD="your_password"
   ```
 
-  (Use the `postgres` password you set during install in step 1.)
+**Before starting the backend, verify the variables are visible from inside the
+`backend` folder:**
+
+```bash
+# macOS/Linux
+echo $DB_USER
+echo $DB_PASSWORD
+
+# Windows (PowerShell)
+echo $env:DB_USER
+echo $env:DB_PASSWORD
+```
+
+If either prints blank, the variables aren't set in this session. Re-set them, then
+check again. If you're running from **VS Code or IntelliJ**, the IDE must have launched
+*after* the system environment variables were saved — a full IDE restart is required,
+or add the variables directly to your run configuration (VS Code: `launch.json` `env`
+block; IntelliJ: **Edit Configurations → Environment variables**).
 
 A ready-made test account is created automatically the first time you run the app, so
 you can log in right away:
