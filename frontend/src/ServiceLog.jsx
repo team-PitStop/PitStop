@@ -53,8 +53,16 @@ function ServiceLog() {
   const validate = () => {
     const newErrors = {};
     if (!form.serviceDate) newErrors.serviceDate = "Date is required";
-    if (!form.mileage) newErrors.mileage = "Mileage is required";
-    if (!form.cost) newErrors.cost = "Cost is required";
+    if (!form.mileage) {
+      newErrors.mileage = "Mileage is required";
+    } else if (isNaN(form.mileage) || Number(form.mileage) < 0) {
+      newErrors.mileage = "Mileage must be a non-negative number";
+    }
+    if (!form.cost) {
+      newErrors.cost = "Cost is required";
+    } else if (isNaN(form.cost) || Number(form.cost) < 0) {
+      newErrors.cost = "Cost must be a non-negative number";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -123,13 +131,13 @@ function ServiceLog() {
 
         <label>
           Mileage *
-          <input type="number" name="mileage" value={form.mileage} onChange={handleChange} />
+          <input type="number" min="0" name="mileage" value={form.mileage} onChange={handleChange} />
           {errors.mileage && <span style={{ color: "red" }}>{errors.mileage}</span>}
         </label>
 
         <label>
           Cost *
-          <input type="number" step="0.01" name="cost" value={form.cost} onChange={handleChange} />
+          <input type="number" step="0.01" min="0" name="cost" value={form.cost} onChange={handleChange} />
           {errors.cost && <span style={{ color: "red" }}>{errors.cost}</span>}
         </label>
 
