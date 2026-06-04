@@ -6,6 +6,7 @@ import Dashboard from "./Dashboard";
 import EditVehicleForm from "./EditVehicleForm";
 import Garage from "./Garage";
 import AddVehicleForm from "./AddVehicleForm";
+import ServiceLog from "./ServiceLog";
 
 function App() {
   return (
@@ -24,6 +25,9 @@ function App() {
 
           {/* US-4: View My Garage */}
           <Route path="/garage" element={<Garage />} />
+
+          {/* Service log for a vehicle */}
+          <Route path="/vehicles/:id/service-log" element={<ServiceLog />} />
 
           {/* US-3: Add a Vehicle */}
           <Route path="/vehicles/new" element={<AddVehicleForm />} />

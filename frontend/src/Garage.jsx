@@ -84,6 +84,7 @@ function Garage() {
                             <p style={{ margin: "4px 0" }}>Mileage: {v.mileage.toLocaleString()} mi</p>
                             <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
                                 <button onClick={() => navigate(`/vehicles/${v.id}/edit`)}>Edit</button>
+                                <button onClick={() => navigate(`/vehicles/${v.id}/service-log`)}>Service Log</button>
                                 <button onClick={() => handleDeleteClick(v)}>Delete</button>
                             </div>
                         </div>
