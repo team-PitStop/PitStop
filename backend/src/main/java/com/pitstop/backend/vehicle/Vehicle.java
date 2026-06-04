@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.JoinColumn;
 
 @Entity
 @Table(name = "vehicles")
@@ -32,6 +33,9 @@ public class Vehicle {
 
     @Column(name = "license_plate")
     private String licensePlate;
+
+    @Column(name = "user_id")
+    private Long userId;
 
 
     protected Vehicle() {
@@ -99,5 +103,13 @@ public class Vehicle {
 
     public void setLicensePlate(String licensePlate) {
         this.licensePlate = licensePlate;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }
