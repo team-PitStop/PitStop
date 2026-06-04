@@ -4,6 +4,8 @@ import Register from "./Register";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
 import EditVehicleForm from "./EditVehicleForm";
+import Garage from "./Garage";
+import AddVehicleForm from "./AddVehicleForm";
 
 function App() {
   return (
@@ -20,11 +22,14 @@ function App() {
           {/* US-1: Register */}
           <Route path="/register" element={<Register />} />
 
+          {/* US-4: View My Garage */}
+          <Route path="/garage" element={<Garage />} />
+
+          {/* US-3: Add a Vehicle */}
+          <Route path="/vehicles/new" element={<AddVehicleForm />} />
+
           {/* US-5: Edit Vehicle route */}
           <Route path="/vehicles/:id/edit" element={<EditVehicleForm />} />
-
-          {/* Placeholder for Dylan's garage - he'll add this for US-4 */}
-          {/* <Route path="/garage" element={<Garage />} /> */}
         </Routes>
       </div>
     </BrowserRouter>

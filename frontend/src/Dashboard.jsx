@@ -34,7 +34,10 @@ function Dashboard() {
         <div style={{ padding: '40px' }}>
             <h1>Welcome to PitStop</h1>
             {email && <p>Logged in as: {email}</p>}
-            <button onClick={handleLogout}>Log Out</button>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                <button onClick={() => navigate('/garage')}>My Garage</button>
+                <button onClick={handleLogout}>Log Out</button>
+            </div>
         </div>
     );
 }

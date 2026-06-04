@@ -35,10 +35,13 @@ function EditVehicleForm() {
   // useEffect runs once when the page loads.
   // It fetches the vehicle's current data so we can pre-fill the form.
   useEffect(() => {
+    const token = localStorage.getItem("token");
     axios
-      .get(`http://localhost:8080/api/vehicles/${id}`)
+      .get(`http://localhost:8080/api/vehicles/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then((response) => {
-        setVehicle(response.data); // pre-fill the form with the data
+        setVehicle(response.data);
         setLoading(false);
       })
       .catch((error) => {
@@ -77,10 +80,13 @@ function EditVehicleForm() {
 
     if (!validate()) return; // stop if validation failed
 
+    const token = localStorage.getItem("token");
     axios
-      .put(`http://localhost:8080/api/vehicles/${id}`, vehicle)
+      .put(`http://localhost:8080/api/vehicles/${id}`, vehicle, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then(() => {
-        navigate("/garage"); // redirect to garage view on success
+        navigate("/garage");
       })
       .catch((error) => {
         console.error("Error saving vehicle:", error);
