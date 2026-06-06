@@ -46,6 +46,12 @@ public class ServiceEntryController {
         ensureOwner(vehicleId, getUserId(authentication));
         serviceEntry.setId(null);
         serviceEntry.setVehicleId(vehicleId);
+        vehicleRepository.findById(vehicleId).ifPresent(vehicle -> {
+            if (serviceEntry.getMileage() > vehicle.getMileage()) {
+                vehicle.setMileage(serviceEntry.getMileage());
+                vehicleRepository.save(vehicle);
+            }
+        });
         return repo.save(serviceEntry);
     }
 }
