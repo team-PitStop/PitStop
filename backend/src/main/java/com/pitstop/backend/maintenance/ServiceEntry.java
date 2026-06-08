@@ -2,8 +2,6 @@ package com.pitstop.backend.maintenance;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,9 +20,8 @@ public class ServiceEntry {
     @Column(name = "vehicle_id", nullable = false)
     private Long vehicleId;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "service_type", nullable = false)
-    private ServiceType serviceType;
+    private String serviceType; // Changed from Enum to String for US-9
 
     @Column(name = "service_date", nullable = false)
     private LocalDate serviceDate;
@@ -58,11 +55,11 @@ public class ServiceEntry {
         this.vehicleId = vehicleId;
     }
 
-    public ServiceType getServiceType() {
+    public String getServiceType() {
         return serviceType;
     }
 
-    public void setServiceType(ServiceType serviceType) {
+    public void setServiceType(String serviceType) {
         this.serviceType = serviceType;
     }
 
