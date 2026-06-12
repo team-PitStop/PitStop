@@ -98,7 +98,7 @@ npm install
 npm start
 ```
 
-The app opens at `http://localhost:5173`.
+The app opens at `http://localhost:5173`. (VITE's built in default port)
 
 ### Running the full app
 
