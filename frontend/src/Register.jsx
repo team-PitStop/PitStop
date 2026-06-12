@@ -11,11 +11,14 @@ function Register() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:8080/api/auth/register', {
+            const response = await axios.post('http://localhost:8080/api/auth/register', {
                 email,
                 password
             });
-            navigate('/login');
+            
+            // US-1b: Save token to session and redirect
+            localStorage.setItem('token', response.data.token);
+            navigate('/dashboard');
         } catch (err) {
             setMessage(err.response?.data?.error || "Signup failed");
         }
@@ -30,6 +33,7 @@ function Register() {
                 <button type="submit">Create Account</button>
             </form>
             <p>{message}</p>
+            <p>Already have an account? <a href="/login">Log in</a></p>
         </div>
     );
 }
