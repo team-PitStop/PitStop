@@ -1,6 +1,16 @@
+// ServiceLog.jsx (UPDATED for US-8)
+//
+// Changes from Dylan's original:
+//   1. Added Edit and Delete buttons on each service entry
+//   2. Added state and handlers for the delete confirmation modal
+//   3. Imported DeleteConfirmationModal (already exists from US-5)
+//
+// The existing add/list functionality (Dylan's US-6) is preserved.
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import DeleteConfirmationModal from "./DeleteConfirmationModal";
 
 // US-9: Full Catalog of Common Services
 const serviceTypes = [
@@ -26,9 +36,12 @@ function ServiceLog() {
     cost: "",
     notes: "",
   });
-  const [customType, setCustomType] = useState(""); // State for "Other" custom name
+  const [customType, setCustomType] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
+
+  // US-8: State for the delete confirmation modal
+  const [entryToDelete, setEntryToDelete] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -62,7 +75,7 @@ function ServiceLog() {
     if (!form.mileage) newErrors.mileage = "Mileage is required";
     if (!form.cost) newErrors.cost = "Cost is required";
     if (form.serviceType === "OTHER" && !customType.trim()) {
-        newErrors.customType = "Please specify the service name";
+      newErrors.customType = "Please specify the service name";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -72,8 +85,8 @@ function ServiceLog() {
     e.preventDefault();
     if (!validate()) return;
 
-    // US-9 Logic: If OTHER is selected, use the custom text field
-    const finalServiceType = form.serviceType === "OTHER" ? customType : form.serviceType;
+    const finalServiceType =
+      form.serviceType === "OTHER" ? customType : form.serviceType;
 
     const token = localStorage.getItem("token");
     axios
@@ -90,18 +103,65 @@ function ServiceLog() {
       )
       .then((response) => {
         setEntries((prev) => [response.data, ...prev]);
-        setForm({ serviceType: "OIL_CHANGE", serviceDate: "", mileage: "", cost: "", notes: "" });
+        setForm({
+          serviceType: "OIL_CHANGE",
+          serviceDate: "",
+          mileage: "",
+          cost: "",
+          notes: "",
+        });
         setCustomType("");
         setErrors({});
       })
       .catch(() => alert("Could not save service entry."));
   };
 
+  // US-8: Edit and Delete handlers
+  const handleEditClick = (entryId) => {
+    navigate(`/vehicles/${id}/service-entries/${entryId}/edit`);
+  };
+
+  const handleDeleteClick = (entry) => {
+    setEntryToDelete(entry);
+  };
+
+  const handleCancelDelete = () => {
+    setEntryToDelete(null);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!entryToDelete) return;
+
+    const token = localStorage.getItem("token");
+    axios
+      .delete(
+        `http://localhost:8080/api/vehicles/${id}/service-entries/${entryToDelete.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      .then(() => {
+        setEntries((prev) =>
+          prev.filter((e) => e.id !== entryToDelete.id)
+        );
+        setEntryToDelete(null);
+      })
+      .catch(() => {
+        alert("Could not delete service entry.");
+        setEntryToDelete(null);
+      });
+  };
+
   if (loading) return <p>Loading service log...</p>;
 
   return (
     <div style={{ padding: "40px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "24px",
+        }}
+      >
         <h2>Service Log</h2>
         <button onClick={() => navigate("/garage")}>Back to Garage</button>
       </div>
@@ -111,39 +171,60 @@ function ServiceLog() {
           Service Type *
           <select name="serviceType" value={form.serviceType} onChange={handleChange}>
             {serviceTypes.map((type) => (
-              <option key={type.value} value={type.value}>{type.label}</option>
+              <option key={type.value} value={type.value}>
+                {type.label}
+              </option>
             ))}
           </select>
         </label>
 
-        {/* US-9: Conditional field for custom service name */}
         {form.serviceType === "OTHER" && (
           <label style={{ marginTop: "10px", display: "block" }}>
             Custom Service Name *
-            <input 
-                type="text" 
-                placeholder="Enter service name" 
-                value={customType} 
-                onChange={(e) => setCustomType(e.target.value)} 
+            <input
+              type="text"
+              placeholder="Enter service name"
+              value={customType}
+              onChange={(e) => setCustomType(e.target.value)}
             />
-            {errors.customType && <span style={{ color: "red" }}>{errors.customType}</span>}
+            {errors.customType && (
+              <span style={{ color: "red" }}>{errors.customType}</span>
+            )}
           </label>
         )}
 
         <label style={{ display: "block", marginTop: "10px" }}>
           Date *
-          <input type="date" name="serviceDate" value={form.serviceDate} onChange={handleChange} />
-          {errors.serviceDate && <span style={{ color: "red" }}>{errors.serviceDate}</span>}
+          <input
+            type="date"
+            name="serviceDate"
+            value={form.serviceDate}
+            onChange={handleChange}
+          />
+          {errors.serviceDate && (
+            <span style={{ color: "red" }}>{errors.serviceDate}</span>
+          )}
         </label>
 
         <label style={{ display: "block", marginTop: "10px" }}>
           Mileage *
-          <input type="number" name="mileage" value={form.mileage} onChange={handleChange} />
+          <input
+            type="number"
+            name="mileage"
+            value={form.mileage}
+            onChange={handleChange}
+          />
         </label>
 
         <label style={{ display: "block", marginTop: "10px" }}>
           Cost *
-          <input type="number" step="0.01" name="cost" value={form.cost} onChange={handleChange} />
+          <input
+            type="number"
+            step="0.01"
+            name="cost"
+            value={form.cost}
+            onChange={handleChange}
+          />
         </label>
 
         <label style={{ display: "block", marginTop: "10px" }}>
@@ -153,7 +234,9 @@ function ServiceLog() {
 
         <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
           <button type="submit">Save Service Entry</button>
-          <button type="button" onClick={() => navigate("/garage")}>Cancel</button>
+          <button type="button" onClick={() => navigate("/garage")}>
+            Cancel
+          </button>
         </div>
       </form>
 
@@ -164,15 +247,42 @@ function ServiceLog() {
         ) : (
           <div style={{ display: "grid", gap: "16px" }}>
             {entries.map((entry) => (
-              <div key={entry.id} style={{ border: "1px solid #ccc", borderRadius: "8px", padding: "16px" }}>
+              <div
+                key={entry.id}
+                style={{
+                  border: "1px solid #ccc",
+                  borderRadius: "8px",
+                  padding: "16px",
+                }}
+              >
                 <strong>{entry.serviceType.replace(/_/g, " ")}</strong>
-                <p>Date: {entry.serviceDate} | Mileage: {entry.mileage} mi | Cost: ${entry.cost}</p>
+                <p>
+                  Date: {entry.serviceDate} | Mileage: {entry.mileage} mi | Cost: ${entry.cost}
+                </p>
                 {entry.notes && <p>Notes: {entry.notes}</p>}
+
+                {/* US-8: Edit and Delete buttons */}
+                <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                  <button onClick={() => handleEditClick(entry.id)}>Edit</button>
+                  <button onClick={() => handleDeleteClick(entry)}>Delete</button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* US-8: Delete confirmation modal (reused from US-5) */}
+      <DeleteConfirmationModal
+        isOpen={entryToDelete !== null}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        vehicleName={
+          entryToDelete
+            ? `the ${entryToDelete.serviceType.replace(/_/g, " ")} entry from ${entryToDelete.serviceDate}`
+            : ""
+        }
+      />
     </div>
   );
 }
