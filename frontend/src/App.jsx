@@ -1,3 +1,11 @@
+// App.jsx (UPDATED for US-8)
+//
+// Change from the existing App.jsx:
+//   Added ONE new route for the edit service entry page (US-8)
+//   AND imported the new EditServiceEntry component
+//
+// Everything else is unchanged.
+
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import Register from "./Register";
@@ -7,6 +15,7 @@ import EditVehicleForm from "./EditVehicleForm";
 import Garage from "./Garage";
 import AddVehicleForm from "./AddVehicleForm";
 import ServiceLog from "./ServiceLog";
+import EditServiceEntry from "./EditServiceEntry"; // US-8: NEW
 
 function App() {
   return (
@@ -26,8 +35,14 @@ function App() {
           {/* US-4: View My Garage */}
           <Route path="/garage" element={<Garage />} />
 
-          {/* Service log for a vehicle */}
+          {/* US-6/7: Service log for a vehicle */}
           <Route path="/vehicles/:id/service-log" element={<ServiceLog />} />
+
+          {/* US-8: Edit Service Entry route (NEW) */}
+          <Route
+            path="/vehicles/:vehicleId/service-entries/:id/edit"
+            element={<EditServiceEntry />}
+          />
 
           {/* US-3: Add a Vehicle */}
           <Route path="/vehicles/new" element={<AddVehicleForm />} />
