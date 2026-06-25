@@ -16,6 +16,7 @@ import Garage from "./Garage";
 import AddVehicleForm from "./AddVehicleForm";
 import ServiceLog from "./ServiceLog";
 import EditServiceEntry from "./EditServiceEntry"; // US-8: NEW
+import UpcomingMaintenance from "./UpcomingMaintenance"; // US-12: NEW
 
 function App() {
   return (
@@ -37,6 +38,9 @@ function App() {
 
           {/* US-6/7: Service log for a vehicle */}
           <Route path="/vehicles/:id/service-log" element={<ServiceLog />} />
+
+          {/* US-12: Upcoming maintenance for a vehicle */}
+          <Route path="/vehicles/:id/upcoming" element={<UpcomingMaintenance />} />
 
           {/* US-8: Edit Service Entry route (NEW) */}
           <Route

@@ -1,11 +1,12 @@
-// ServiceLog.jsx (UPDATED for US-8 and US-11)
+// ServiceLog.jsx (UPDATED for US-8)
 //
 // Changes from Dylan's original:
 //   1. Added Edit and Delete buttons on each service entry
 //   2. Added state and handlers for the delete confirmation modal
 //   3. Imported DeleteConfirmationModal (already exists from US-5)
-//   4. US-11: Added "Schedule Upcoming Maintenance" form + handler
 //
+// US-11's "Schedule Upcoming Maintenance" form and US-12's upcoming list now
+// live on the dedicated UpcomingMaintenance page (reached from the Garage).
 // The existing add/list functionality (Dylan's US-6) is preserved.
 
 import { useState, useEffect } from "react";
@@ -43,14 +44,6 @@ function ServiceLog() {
 
   // US-8: State for the delete confirmation modal
   const [entryToDelete, setEntryToDelete] = useState(null);
-
-  // US-11: State for the "Schedule Upcoming Maintenance" form
-  const [maintenanceForm, setMaintenanceForm] = useState({
-    serviceType: "OIL_CHANGE",
-    dueDate: "",
-    dueMileage: "",
-    notes: "",
-  });
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -157,40 +150,6 @@ function ServiceLog() {
           alert("Could not delete service entry.");
           setEntryToDelete(null);
         });
-  };
-
-  // US-11: Maintenance scheduling handlers
-  const handleMaintenanceChange = (e) => {
-    const { name, value } = e.target;
-    setMaintenanceForm({ ...maintenanceForm, [name]: value });
-  };
-
-  const handleScheduleMaintenance = (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem("token");
-    axios
-        .post(
-            `http://localhost:8080/api/vehicles/${id}/upcoming-maintenance`,
-            {
-              serviceType: maintenanceForm.serviceType,
-              dueDate: maintenanceForm.dueDate || null,
-              dueMileage: maintenanceForm.dueMileage
-                  ? parseInt(maintenanceForm.dueMileage, 10)
-                  : null,
-              notes: maintenanceForm.notes,
-            },
-            { headers: { Authorization: `Bearer ${token}` } }
-        )
-        .then(() => {
-          alert("Maintenance scheduled!");
-          setMaintenanceForm({
-            serviceType: "OIL_CHANGE",
-            dueDate: "",
-            dueMileage: "",
-            notes: "",
-          });
-        })
-        .catch(() => alert("Could not schedule maintenance."));
   };
 
   if (loading) return <p>Loading service log...</p>;
@@ -313,38 +272,6 @@ function ServiceLog() {
                 ))}
               </div>
           )}
-        </div>
-
-        {/* US-11: Schedule Upcoming Maintenance */}
-        <div style={{ marginTop: "40px" }}>
-          <h3>Schedule Upcoming Maintenance</h3>
-          <form onSubmit={handleScheduleMaintenance} style={{ maxWidth: "520px" }}>
-            <label>
-              Service Type
-              <select name="serviceType" value={maintenanceForm.serviceType} onChange={handleMaintenanceChange}>
-                {serviceTypes.map((type) => (
-                    <option key={type.value} value={type.value}>{type.label}</option>
-                ))}
-              </select>
-            </label>
-
-            <label style={{ display: "block", marginTop: "10px" }}>
-              Due Date
-              <input type="date" name="dueDate" value={maintenanceForm.dueDate} onChange={handleMaintenanceChange} />
-            </label>
-
-            <label style={{ display: "block", marginTop: "10px" }}>
-              Due Mileage
-              <input type="number" name="dueMileage" value={maintenanceForm.dueMileage} onChange={handleMaintenanceChange} />
-            </label>
-
-            <label style={{ display: "block", marginTop: "10px" }}>
-              Notes
-              <textarea name="notes" value={maintenanceForm.notes} onChange={handleMaintenanceChange} rows="3" />
-            </label>
-
-            <button type="submit" style={{ marginTop: "12px" }}>Schedule Maintenance</button>
-          </form>
         </div>
 
         {/* US-8: Delete confirmation modal (reused from US-5) */}
