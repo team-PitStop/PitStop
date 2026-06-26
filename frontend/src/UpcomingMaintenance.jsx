@@ -42,6 +42,13 @@ function UpcomingMaintenance() {
     dueMileage: "",
     notes: "",
   });
+  const [completingId, setCompletingId] = useState(null);
+  const [completeForm, setCompleteForm] = useState({
+    actualDate: "",
+    actualMileage: "",
+    actualCost: "",
+  });
+  const [completeErrors, setCompleteErrors] = useState({});
 
   const loadUpcoming = () => {
     const token = localStorage.getItem("token");
@@ -73,9 +80,18 @@ function UpcomingMaintenance() {
     setForm({ ...form, [name]: value });
   };
 
+  const handleCompleteChange = (e) => {
+    const { name, value } = e.target;
+    setCompleteForm({ ...completeForm, [name]: value });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
     axios
         .post(
             `http://localhost:8080/api/vehicles/${id}/upcoming-maintenance`,
@@ -91,7 +107,65 @@ function UpcomingMaintenance() {
           setForm({ serviceType: "OIL_CHANGE", dueDate: "", dueMileage: "", notes: "" });
           loadUpcoming(); // refresh so the new item appears, re-sorted
         })
-        .catch(() => alert("Could not schedule maintenance."));
+        .catch((error) => {
+          if (error.response?.status === 401) {
+            alert("Session expired. Please log in again.");
+            navigate("/login");
+            return;
+          }
+          alert("Could not schedule maintenance.");
+        });
+  };
+
+  const handleCompleteClick = (item) => {
+    setCompletingId(item.id);
+    setCompleteForm({ actualDate: "", actualMileage: "", actualCost: "" });
+    setCompleteErrors({});
+  };
+
+  const handleCancelComplete = () => {
+    setCompletingId(null);
+    setCompleteErrors({});
+  };
+
+  const handleCompleteSubmit = (itemId) => {
+    const errors = {};
+    if (!completeForm.actualDate) errors.actualDate = "Actual date is required.";
+    if (completeForm.actualMileage === "") errors.actualMileage = "Actual mileage is required.";
+    if (completeForm.actualCost === "") errors.actualCost = "Actual cost is required.";
+    setCompleteErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Session expired. Please log in again.");
+      navigate("/login");
+      return;
+    }
+    axios
+        .post(
+            `http://localhost:8080/api/vehicles/${id}/upcoming-maintenance/${itemId}/complete`,
+            {
+              actualDate: completeForm.actualDate,
+              actualMileage: parseInt(completeForm.actualMileage, 10),
+              actualCost: parseFloat(completeForm.actualCost),
+            },
+            { headers: { Authorization: `Bearer ${token}` } }
+        )
+        .then(() => {
+          setCompletingId(null);
+          setCompleteForm({ actualDate: "", actualMileage: "", actualCost: "" });
+          loadUpcoming();
+        })
+        .catch((error) => {
+          if (error.response?.status === 401) {
+            alert("Session expired. Please log in again.");
+            navigate("/login");
+            return;
+          }
+          const message = error.response?.data?.message || error.message || "Could not mark maintenance as done.";
+          alert(message);
+        });
   };
 
   if (loading) return <p style={{ padding: "40px" }}>Loading upcoming maintenance...</p>;
@@ -117,6 +191,7 @@ function UpcomingMaintenance() {
             <div style={{ display: "grid", gap: "16px", maxWidth: "640px" }}>
               {upcoming.map((item) => {
                 const style = statusStyles[item.status] || statusStyles.UPCOMING;
+                const isCompleting = completingId === item.id;
                 return (
                     <div
                         key={item.id}
@@ -138,6 +213,66 @@ function UpcomingMaintenance() {
                         {!item.dueDate && item.dueMileage == null && "No due date or mileage set"}
                       </p>
                       {item.notes && <p style={{ margin: "4px 0 0" }}>Notes: {item.notes}</p>}
+
+                      <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+                        <button type="button" onClick={() => handleCompleteClick(item)}>
+                          Mark as Done
+                        </button>
+                      </div>
+
+                      {isCompleting && (
+                          <div style={{ marginTop: "16px", padding: "16px", border: "1px solid #ddd", borderRadius: "8px", background: "#fafafa" }}>
+                            <h4 style={{ marginTop: 0 }}>Complete Maintenance</h4>
+                            <p style={{ marginTop: 0, marginBottom: "12px" }}>
+                              Enter the actual date, mileage, and cost to save this maintenance in history.
+                            </p>
+                            <label style={{ display: "block", marginBottom: "8px" }}>
+                              Actual Date *
+                              <input
+                                  type="date"
+                                  name="actualDate"
+                                  value={completeForm.actualDate}
+                                  onChange={handleCompleteChange}
+                              />
+                              {completeErrors.actualDate && (
+                                  <span style={{ color: "red", display: "block" }}>{completeErrors.actualDate}</span>
+                              )}
+                            </label>
+                            <label style={{ display: "block", marginBottom: "8px" }}>
+                              Actual Mileage *
+                              <input
+                                  type="number"
+                                  name="actualMileage"
+                                  value={completeForm.actualMileage}
+                                  onChange={handleCompleteChange}
+                              />
+                              {completeErrors.actualMileage && (
+                                  <span style={{ color: "red", display: "block" }}>{completeErrors.actualMileage}</span>
+                              )}
+                            </label>
+                            <label style={{ display: "block", marginBottom: "8px" }}>
+                              Actual Cost *
+                              <input
+                                  type="number"
+                                  step="0.01"
+                                  name="actualCost"
+                                  value={completeForm.actualCost}
+                                  onChange={handleCompleteChange}
+                              />
+                              {completeErrors.actualCost && (
+                                  <span style={{ color: "red", display: "block" }}>{completeErrors.actualCost}</span>
+                              )}
+                            </label>
+                            <div style={{ display: "flex", gap: "8px" }}>
+                              <button type="button" onClick={() => handleCompleteSubmit(item.id)}>
+                                Save to History
+                              </button>
+                              <button type="button" onClick={handleCancelComplete}>
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                      )}
                     </div>
                 );
               })}

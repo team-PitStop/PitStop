@@ -35,7 +35,7 @@ public class ServiceEntry {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
-    protected ServiceEntry() {
+    public ServiceEntry() {
         // Required by JPA.
     }
 
