@@ -5,6 +5,7 @@ import com.pitstop.backend.auth.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -41,6 +42,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Public: you don't have a token yet when you register or log in.
                 .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+                // Preflight requests must be allowed before auth is required.
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // Everything else (e.g. /api/auth/me, /api/vehicles) needs a valid token.
                 .anyRequest().authenticated()
             )

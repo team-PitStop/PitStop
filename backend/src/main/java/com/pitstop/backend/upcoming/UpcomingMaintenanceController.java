@@ -1,5 +1,7 @@
 package com.pitstop.backend.upcoming;
 
+import com.pitstop.backend.maintenance.ServiceEntry;
+import com.pitstop.backend.maintenance.ServiceEntryRepository;
 import com.pitstop.backend.user.UserRepository;
 import com.pitstop.backend.vehicle.Vehicle;
 import com.pitstop.backend.vehicle.VehicleRepository;
@@ -8,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -19,11 +22,13 @@ public class UpcomingMaintenanceController {
     private final UpcomingMaintenanceRepository repo;
     private final VehicleRepository vehicleRepository;
     private final UserRepository userRepository;
+    private final ServiceEntryRepository serviceEntryRepository;
 
-    public UpcomingMaintenanceController(UpcomingMaintenanceRepository repo, VehicleRepository vehicleRepository, UserRepository userRepository) {
+    public UpcomingMaintenanceController(UpcomingMaintenanceRepository repo, VehicleRepository vehicleRepository, UserRepository userRepository, ServiceEntryRepository serviceEntryRepository) {
         this.repo = repo;
         this.vehicleRepository = vehicleRepository;
         this.userRepository = userRepository;
+        this.serviceEntryRepository = serviceEntryRepository;
     }
 
     private Long getUserId(Authentication authentication) {
@@ -100,5 +105,69 @@ public class UpcomingMaintenanceController {
         upcomingMaintenance.setId(null);
         upcomingMaintenance.setVehicleId(vehicleId);
         return repo.save(upcomingMaintenance);
+    }
+
+    @PostMapping("/{itemId}/complete")
+    public ServiceEntry complete(@PathVariable Long vehicleId,
+                                 @PathVariable Long itemId,
+                                 @RequestBody CompleteUpcomingMaintenanceRequest request,
+                                 Authentication authentication) {
+        long userId = getUserId(authentication);
+        ensureOwner(vehicleId, userId);
+
+        UpcomingMaintenance task = repo.findById(itemId)
+                .filter(t -> t.getVehicleId().equals(vehicleId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        Vehicle vehicle = vehicleRepository.findByIdAndUserId(vehicleId, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        ServiceEntry serviceEntry = new ServiceEntry();
+        serviceEntry.setVehicleId(vehicleId);
+        serviceEntry.setServiceType(task.getServiceType().replace("_", " "));
+        serviceEntry.setServiceDate(LocalDate.parse(request.getActualDate()));
+        serviceEntry.setMileage(request.getActualMileage());
+        serviceEntry.setCost(BigDecimal.valueOf(request.getActualCost()));
+        serviceEntry.setNotes(task.getNotes());
+
+        ServiceEntry savedEntry = serviceEntryRepository.save(serviceEntry);
+
+        if (request.getActualMileage() > vehicle.getMileage()) {
+            vehicle.setMileage(request.getActualMileage());
+            vehicleRepository.save(vehicle);
+        }
+
+        repo.delete(task);
+        return savedEntry;
+    }
+
+    public static class CompleteUpcomingMaintenanceRequest {
+        private String actualDate;
+        private int actualMileage;
+        private double actualCost;
+
+        public String getActualDate() {
+            return actualDate;
+        }
+
+        public void setActualDate(String actualDate) {
+            this.actualDate = actualDate;
+        }
+
+        public int getActualMileage() {
+            return actualMileage;
+        }
+
+        public void setActualMileage(int actualMileage) {
+            this.actualMileage = actualMileage;
+        }
+
+        public double getActualCost() {
+            return actualCost;
+        }
+
+        public void setActualCost(double actualCost) {
+            this.actualCost = actualCost;
+        }
     }
 }
