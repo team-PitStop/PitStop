@@ -80,6 +80,39 @@ public class VehicleController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @GetMapping("/{id}/collaborators")
+    public List<VehicleCollaboratorDTO> getCollaborators(@PathVariable Long id, Authentication authentication) {
+        Long requesterId = getUserId(authentication);
+
+        Vehicle vehicle = repo.findByIdAndUserId(id, requesterId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found"));
+
+        List<VehicleCollaboratorDTO> result = new ArrayList<>();
+
+        User owner = userRepository.findById(vehicle.getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Owner not found"));
+        result.add(new VehicleCollaboratorDTO(owner.getId(), owner.getEmail(), "OWNER"));
+
+        for (VehicleShare share : shareRepository.findByVehicleId(id)) {
+            userRepository.findById(share.getUserId())
+                    .ifPresent(user -> result.add(new VehicleCollaboratorDTO(user.getId(), user.getEmail(), "MEMBER")));
+        }
+
+        return result;
+    }
+
+    @DeleteMapping("/{id}/collaborators/{userId}")
+    public ResponseEntity<Void> removeCollaborator(@PathVariable Long id, @PathVariable Long userId,
+                                                   Authentication authentication) {
+        Long requesterId = getUserId(authentication);
+
+        repo.findByIdAndUserId(id, requesterId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found"));
+
+        shareRepository.deleteByVehicleIdAndUserId(id, userId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping
     public Vehicle add(@RequestBody Vehicle vehicle, Authentication authentication) {
         vehicle.setUserId(getUserId(authentication));
