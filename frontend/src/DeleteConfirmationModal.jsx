@@ -1,15 +1,15 @@
 // DeleteConfirmationModal.jsx
-// US-5: Delete a Vehicle
-// This is a reusable popup that asks "Are you sure you want to delete this vehicle?"
-// before actually deleting it. Required by the acceptance criteria.
+// US-5: Delete a Vehicle / Reusable Delete Confirmation
+// This is a reusable popup that asks for confirmation before deleting an item.
 
 // Props this component accepts from its parent:
 //   - isOpen: whether the modal should show (true/false)
 //   - onClose: function to call when user clicks Cancel
 //   - onConfirm: function to call when user clicks Yes/Delete
 //   - vehicleName: optional name to show in the message (e.g., "2018 Honda Civic")
+//   - itemType: optional type of item being deleted (default: "Vehicle")
 
-function DeleteConfirmationModal({ isOpen, onClose, onConfirm, vehicleName }) {
+function DeleteConfirmationModal({ isOpen, onClose, onConfirm, vehicleName, itemType = "Vehicle" }) {
   // If the modal isn't supposed to be open, render nothing
   if (!isOpen) return null;
 
@@ -22,11 +22,11 @@ function DeleteConfirmationModal({ isOpen, onClose, onConfirm, vehicleName }) {
         to the overlay).
       */}
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h3>Delete Vehicle?</h3>
+        <h3>Delete {itemType}?</h3>
 
         <p>
           Are you sure you want to delete{" "}
-          <strong>{vehicleName || "this vehicle"}</strong>?
+          <strong>{vehicleName || `this ${itemType.toLowerCase()}`}</strong>?
           <br />
           This action cannot be undone.
         </p>

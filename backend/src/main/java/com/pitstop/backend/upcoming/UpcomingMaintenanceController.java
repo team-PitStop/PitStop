@@ -5,6 +5,7 @@ import com.pitstop.backend.maintenance.ServiceEntryRepository;
 import com.pitstop.backend.user.UserRepository;
 import com.pitstop.backend.vehicle.Vehicle;
 import com.pitstop.backend.vehicle.VehicleRepository;
+import com.pitstop.backend.vehicle.VehicleShareRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -21,12 +22,16 @@ public class UpcomingMaintenanceController {
 
     private final UpcomingMaintenanceRepository repo;
     private final VehicleRepository vehicleRepository;
+    private final VehicleShareRepository shareRepository;
     private final UserRepository userRepository;
     private final ServiceEntryRepository serviceEntryRepository;
 
-    public UpcomingMaintenanceController(UpcomingMaintenanceRepository repo, VehicleRepository vehicleRepository, UserRepository userRepository, ServiceEntryRepository serviceEntryRepository) {
+    public UpcomingMaintenanceController(UpcomingMaintenanceRepository repo, VehicleRepository vehicleRepository, 
+                                       VehicleShareRepository shareRepository, UserRepository userRepository, 
+                                       ServiceEntryRepository serviceEntryRepository) {
         this.repo = repo;
         this.vehicleRepository = vehicleRepository;
+        this.shareRepository = shareRepository;
         this.userRepository = userRepository;
         this.serviceEntryRepository = serviceEntryRepository;
     }
@@ -37,9 +42,25 @@ public class UpcomingMaintenanceController {
                 .getId();
     }
 
-    private void ensureOwner(long vehicleId, long userId) {
-        if (vehicleRepository.findByIdAndUserId(vehicleId, userId).isEmpty()) {
+    private boolean isVehicleOwner(long vehicleId, long userId) {
+        return vehicleRepository.findByIdAndUserId(vehicleId, userId).isPresent();
+    }
+
+    private boolean isVehicleCollaborator(long vehicleId, long userId) {
+        return shareRepository.existsByVehicleIdAndUserId(vehicleId, userId);
+    }
+
+    private void ensureCanView(long vehicleId, long userId) {
+        boolean isOwner = isVehicleOwner(vehicleId, userId);
+        boolean isCollaborator = isVehicleCollaborator(vehicleId, userId);
+        if (!isOwner && !isCollaborator) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    private void ensureOwner(long vehicleId, long userId) {
+        if (!isVehicleOwner(vehicleId, userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the vehicle owner can modify upcoming maintenance");
         }
     }
 
@@ -49,7 +70,11 @@ public class UpcomingMaintenanceController {
 
     @GetMapping
     public List<UpcomingMaintenanceDTO> list(@PathVariable Long vehicleId, Authentication authentication) {
-        Vehicle vehicle = vehicleRepository.findByIdAndUserId(vehicleId, getUserId(authentication))
+        Long userId = getUserId(authentication);
+        ensureCanView(vehicleId, userId);
+
+        // Get the vehicle - for mileage info for status calculation
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         LocalDate today = LocalDate.now();
@@ -119,7 +144,7 @@ public class UpcomingMaintenanceController {
                 .filter(t -> t.getVehicleId().equals(vehicleId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        Vehicle vehicle = vehicleRepository.findByIdAndUserId(vehicleId, userId)
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         ServiceEntry serviceEntry = new ServiceEntry();
@@ -129,6 +154,7 @@ public class UpcomingMaintenanceController {
         serviceEntry.setMileage(request.getActualMileage());
         serviceEntry.setCost(BigDecimal.valueOf(request.getActualCost()));
         serviceEntry.setNotes(task.getNotes());
+        serviceEntry.setCreatedBy(userId);
 
         ServiceEntry savedEntry = serviceEntryRepository.save(serviceEntry);
 

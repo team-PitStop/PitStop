@@ -29,6 +29,8 @@ function EditServiceEntry() {
   const [customType, setCustomType] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
+  const [isOwner, setIsOwner] = useState(false);
+  const [createdByEmail, setCreatedByEmail] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -37,6 +39,22 @@ function EditServiceEntry() {
       return;
     }
 
+    // Check if the current user is the vehicle owner
+    axios
+        .get("http://localhost:8080/api/vehicles/grid", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((response) => {
+          const vehicle = response.data.find((v) => v.id === parseInt(vehicleId, 10));
+          if (vehicle) {
+            setIsOwner(!vehicle.shared);
+          }
+        })
+        .catch((err) => {
+          console.error("Error fetching vehicle grid:", err);
+        });
+
+    // Fetch the service entry
     axios
       .get(
         `http://localhost:8080/api/vehicles/${vehicleId}/service-entries/${id}`,
@@ -67,6 +85,7 @@ function EditServiceEntry() {
           });
         }
 
+        setCreatedByEmail(data.createdByEmail);
         setLoading(false);
       })
       .catch((error) => {
@@ -126,9 +145,26 @@ function EditServiceEntry() {
 
   if (loading) return <p>Loading service entry...</p>;
 
+  if (!isOwner) {
+    return (
+      <div style={{ padding: "40px" }}>
+        <h2>Edit Service Entry</h2>
+        <p style={{ color: "red", marginBottom: "20px" }}>
+          Only the vehicle owner can edit service entries. This entry was created by {createdByEmail}.
+        </p>
+        <button onClick={() => navigate(`/vehicles/${vehicleId}/service-log`)}>
+          Back to Service Log
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div style={{ padding: "40px", maxWidth: "520px" }}>
       <h2>Edit Service Entry</h2>
+      <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "20px" }}>
+        Created by: {createdByEmail}
+      </p>
 
       <form onSubmit={handleSubmit}>
         <label>

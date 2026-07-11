@@ -59,6 +59,7 @@ function UpcomingMaintenance() {
   const navigate = useNavigate();
   const [upcoming, setUpcoming] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isOwner, setIsOwner] = useState(false);
   const [form, setForm] = useState({
     serviceType: "OIL_CHANGE",
     dueDate: "",
@@ -96,6 +97,22 @@ function UpcomingMaintenance() {
       navigate("/login");
       return;
     }
+
+    // Fetch all vehicles to determine if this user is the owner
+    axios
+      .get("http://localhost:8080/api/vehicles/grid", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        const vehicle = response.data.find((v) => v.id === parseInt(id, 10));
+        if (vehicle) {
+          setIsOwner(!vehicle.shared);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching vehicle grid:", err);
+      });
+
     loadUpcoming();
   }, [id, navigate]);
 
@@ -128,11 +145,6 @@ function UpcomingMaintenance() {
       }
       setForm({ ...form, [name]: value });
     }
-  };
-
-  const handleCompleteChange = (e) => {
-    const { name, value } = e.target;
-    setCompleteForm({ ...completeForm, [name]: value });
   };
 
   const handleCompleteChange = (e) => {
@@ -257,11 +269,13 @@ function UpcomingMaintenance() {
                 </p>
                 {item.notes && <p style={{ margin: "4px 0 0" }}>Notes: {item.notes}</p>}
 
-                <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
-                  <button type="button" onClick={() => handleCompleteClick(item)}>
-                    Mark as Done
-                  </button>
-                </div>
+                {isOwner && (
+                  <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+                    <button type="button" onClick={() => handleCompleteClick(item)}>
+                      Mark as Done
+                    </button>
+                  </div>
+                )}
 
                 {isCompleting && (
                   <div style={{ marginTop: "16px", padding: "16px", border: "1px solid #ddd", borderRadius: "8px", background: "#fafafa" }}>
@@ -323,47 +337,55 @@ function UpcomingMaintenance() {
       )}
 
       {/* Schedule Upcoming Maintenance (moved from ServiceLog, originally US-11) */}
-      <div style={{ marginTop: "40px" }}>
-        <h3>Schedule Upcoming Maintenance</h3>
+      {isOwner ? (
+        <div style={{ marginTop: "40px" }}>
+          <h3>Schedule Upcoming Maintenance</h3>
 
-        <form onSubmit={handleSubmit} style={{ maxWidth: "520px" }}>
-          <label>
-            Service Type
-            <select name="serviceType" value={form.serviceType} onChange={handleChange}>
-              {serviceTypes.map((type) => (
-                <option key={type.value} value={type.value}>{type.label}</option>
-              ))}
-            </select>
-          </label>
+          <form onSubmit={handleSubmit} style={{ maxWidth: "520px" }}>
+            <label>
+              Service Type
+              <select name="serviceType" value={form.serviceType} onChange={handleChange}>
+                {serviceTypes.map((type) => (
+                  <option key={type.value} value={type.value}>{type.label}</option>
+                ))}
+              </select>
+            </label>
 
-          {currentInterval && (currentInterval.mileageInterval || currentInterval.monthInterval) && (
-            <p style={{ margin: "4px 0 8px", fontSize: "0.85rem", color: "#666" }}>
-              💡 Suggested interval:
-              {currentInterval.mileageInterval && ` every ${currentInterval.mileageInterval.toLocaleString()} miles`}
-              {currentInterval.mileageInterval && currentInterval.monthInterval && " or"}
-              {currentInterval.monthInterval && ` every ${currentInterval.monthInterval} months`}
-              {suggestionApplied && " (applied below — you can override)"}
-            </p>
-          )}
+            {currentInterval && (currentInterval.mileageInterval || currentInterval.monthInterval) && (
+              <p style={{ margin: "4px 0 8px", fontSize: "0.85rem", color: "#666" }}>
+                💡 Suggested interval:
+                {currentInterval.mileageInterval && ` every ${currentInterval.mileageInterval.toLocaleString()} miles`}
+                {currentInterval.mileageInterval && currentInterval.monthInterval && " or"}
+                {currentInterval.monthInterval && ` every ${currentInterval.monthInterval} months`}
+                {suggestionApplied && " (applied below — you can override)"}
+              </p>
+            )}
 
-          <label style={{ display: "block", marginTop: "10px" }}>
-            Due Date
-            <input type="date" name="dueDate" value={form.dueDate} onChange={handleChange} />
-          </label>
+            <label style={{ display: "block", marginTop: "10px" }}>
+              Due Date
+              <input type="date" name="dueDate" value={form.dueDate} onChange={handleChange} />
+            </label>
 
-          <label style={{ display: "block", marginTop: "10px" }}>
-            Due Mileage
-            <input type="number" name="dueMileage" value={form.dueMileage} onChange={handleChange} />
-          </label>
+            <label style={{ display: "block", marginTop: "10px" }}>
+              Due Mileage
+              <input type="number" name="dueMileage" value={form.dueMileage} onChange={handleChange} />
+            </label>
 
-          <label style={{ display: "block", marginTop: "10px" }}>
-            Notes
-            <textarea name="notes" value={form.notes} onChange={handleChange} rows="3" />
-          </label>
+            <label style={{ display: "block", marginTop: "10px" }}>
+              Notes
+              <textarea name="notes" value={form.notes} onChange={handleChange} rows="3" />
+            </label>
 
-          <button type="submit" style={{ marginTop: "12px" }}>Schedule Maintenance</button>
-        </form>
-      </div>
+            <button type="submit" style={{ marginTop: "12px" }}>Schedule Maintenance</button>
+          </form>
+        </div>
+      ) : (
+        <div style={{ marginTop: "40px", padding: "16px", backgroundColor: "#e3f2fd", borderRadius: "8px", border: "1px solid #90caf9" }}>
+          <p style={{ margin: 0, color: "#1565c0" }}>
+            Only the vehicle owner can schedule maintenance. You can view upcoming maintenance for this shared vehicle.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
