@@ -1,13 +1,10 @@
-// ServiceLog.jsx (UPDATED for US-8)
+// ServiceLog.jsx (UPDATED for US-8 and shared vehicle access)
 //
-// Changes from Dylan's original:
-//   1. Added Edit and Delete buttons on each service entry
-//   2. Added state and handlers for the delete confirmation modal
-//   3. Imported DeleteConfirmationModal (already exists from US-5)
-//
-// US-11's "Schedule Upcoming Maintenance" form and US-12's upcoming list now
-// live on the dedicated UpcomingMaintenance page (reached from the Garage).
-// The existing add/list functionality (Dylan's US-6) is preserved.
+// Changes:
+//   1. Display creator email for each service entry
+//   2. Allow shared users (collaborators) to view and create entries
+//   3. Only show edit/delete buttons if the current user is the vehicle owner
+//   4. Display "Created by" information on each entry
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -41,6 +38,7 @@ function ServiceLog() {
   const [customType, setCustomType] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
+  const [isOwner, setIsOwner] = useState(false);
 
   // US-8: State for the delete confirmation modal
   const [entryToDelete, setEntryToDelete] = useState(null);
@@ -52,6 +50,22 @@ function ServiceLog() {
       return;
     }
 
+    // Fetch all vehicles to determine if this user is the owner
+    axios
+        .get("http://localhost:8080/api/vehicles/grid", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((response) => {
+          const vehicle = response.data.find((v) => v.id === parseInt(id, 10));
+          if (vehicle) {
+            setIsOwner(!vehicle.shared);
+          }
+        })
+        .catch((err) => {
+          console.error("Error fetching vehicle grid:", err);
+        });
+
+    // Fetch service entries
     axios
         .get(`http://localhost:8080/api/vehicles/${id}/service-entries`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -262,12 +276,17 @@ function ServiceLog() {
                         Date: {entry.serviceDate} | Mileage: {entry.mileage} mi | Cost: ${entry.cost}
                       </p>
                       {entry.notes && <p>Notes: {entry.notes}</p>}
+                      <p style={{ fontSize: "0.85rem", color: "#666", marginBottom: "8px" }}>
+                        Created by: {entry.createdByEmail}
+                      </p>
 
-                      {/* US-8: Edit and Delete buttons */}
-                      <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-                        <button onClick={() => handleEditClick(entry.id)}>Edit</button>
-                        <button onClick={() => handleDeleteClick(entry)}>Delete</button>
-                      </div>
+                      {/* Only show Edit and Delete buttons if the current user is the owner */}
+                      {isOwner && (
+                          <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                            <button onClick={() => handleEditClick(entry.id)}>Edit</button>
+                            <button onClick={() => handleDeleteClick(entry)}>Delete</button>
+                          </div>
+                      )}
                     </div>
                 ))}
               </div>
@@ -279,6 +298,7 @@ function ServiceLog() {
             isOpen={entryToDelete !== null}
             onClose={handleCancelDelete}
             onConfirm={handleConfirmDelete}
+            itemType="Service Entry"
             vehicleName={
               entryToDelete
                   ? `the ${entryToDelete.serviceType.replace(/_/g, " ")} entry from ${entryToDelete.serviceDate}`

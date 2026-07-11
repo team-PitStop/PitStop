@@ -35,6 +35,9 @@ public class ServiceEntry {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "created_by", nullable = false)
+    private Long createdBy;
+
     public ServiceEntry() {
         // Required by JPA.
     }
@@ -93,5 +96,13 @@ public class ServiceEntry {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
     }
 }
