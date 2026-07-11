@@ -12,6 +12,9 @@ public class VehicleGridDTO {
     private String make;
     private String model;
     private int mileage;
+    // US-16: true when this vehicle was shared WITH the current user (they are a
+    // collaborator, not the owner). False for the user's own vehicles.
+    private boolean shared;
 
     public VehicleGridDTO(Long id, int year, String make, String model, int mileage) {
         this.id = id;
@@ -22,11 +25,16 @@ public class VehicleGridDTO {
     }
 
     public VehicleGridDTO(Vehicle vehicle) {
+        this(vehicle, false);
+    }
+
+    public VehicleGridDTO(Vehicle vehicle, boolean shared) {
         this.id = vehicle.getId();
         this.year = vehicle.getYear();
         this.make = vehicle.getMake();
         this.model = vehicle.getModel();
         this.mileage = vehicle.getMileage();
+        this.shared = shared;
     }
 
     public Long getId() {
@@ -67,5 +75,13 @@ public class VehicleGridDTO {
 
     public void setMileage(int mileage) {
         this.mileage = mileage;
+    }
+
+    public boolean isShared() {
+        return shared;
+    }
+
+    public void setShared(boolean shared) {
+        this.shared = shared;
     }
 }

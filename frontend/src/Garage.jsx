@@ -2,12 +2,15 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import ShareVehicleModal from "./ShareVehicleModal";
 
 function Garage() {
     const [vehicles, setVehicles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedVehicle, setSelectedVehicle] = useState(null);
+    const [shareModalOpen, setShareModalOpen] = useState(false);
+    const [vehicleToShare, setVehicleToShare] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -34,6 +37,11 @@ function Garage() {
     const handleDeleteClick = (vehicle) => {
         setSelectedVehicle(vehicle);
         setModalOpen(true);
+    };
+
+    const handleShareClick = (vehicle) => {
+        setVehicleToShare(vehicle);
+        setShareModalOpen(true);
     };
 
     const handleDeleteConfirm = () => {
@@ -81,12 +89,32 @@ function Garage() {
                             <h3 style={{ margin: "0 0 8px" }}>
                                 {v.year} {v.make} {v.model}
                             </h3>
+                            {v.shared && (
+                                <span
+                                    style={{
+                                        display: "inline-block",
+                                        fontSize: "12px",
+                                        color: "#555",
+                                        background: "#eef",
+                                        borderRadius: "4px",
+                                        padding: "2px 8px",
+                                        marginBottom: "4px",
+                                    }}
+                                >
+                                    Shared with you
+                                </span>
+                            )}
                             <p style={{ margin: "4px 0" }}>Mileage: {v.mileage.toLocaleString()} mi</p>
-                            <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
-                                <button onClick={() => navigate(`/vehicles/${v.id}/edit`)}>Edit</button>
+                            <div style={{ display: "flex", gap: "8px", marginTop: "12px", flexWrap: "wrap" }}>
                                 <button onClick={() => navigate(`/vehicles/${v.id}/service-log`)}>Service Log</button>
                                 <button onClick={() => navigate(`/vehicles/${v.id}/upcoming`)}>Upcoming</button>
-                                <button onClick={() => handleDeleteClick(v)}>Delete</button>
+                                {!v.shared && (
+                                    <>
+                                        <button onClick={() => navigate(`/vehicles/${v.id}/edit`)}>Edit</button>
+                                        <button onClick={() => handleShareClick(v)}>Share</button>
+                                        <button onClick={() => handleDeleteClick(v)}>Delete</button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     ))}
@@ -98,6 +126,12 @@ function Garage() {
                 onClose={() => setModalOpen(false)}
                 onConfirm={handleDeleteConfirm}
                 vehicleName={selectedVehicle ? `${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model}` : ""}
+            />
+
+            <ShareVehicleModal
+                isOpen={shareModalOpen}
+                onClose={() => setShareModalOpen(false)}
+                vehicle={vehicleToShare}
             />
         </div>
     );
