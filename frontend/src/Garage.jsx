@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import ShareVehicleModal from "./ShareVehicleModal";
+import ManageCollaboratorsModal from "./ManageCollaboratorsModal";
 
 function Garage() {
     const [vehicles, setVehicles] = useState([]);
@@ -11,6 +12,8 @@ function Garage() {
     const [selectedVehicle, setSelectedVehicle] = useState(null);
     const [shareModalOpen, setShareModalOpen] = useState(false);
     const [vehicleToShare, setVehicleToShare] = useState(null);
+    const [manageModalOpen, setManageModalOpen] = useState(false);
+    const [vehicleToManage, setVehicleToManage] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -42,6 +45,11 @@ function Garage() {
     const handleShareClick = (vehicle) => {
         setVehicleToShare(vehicle);
         setShareModalOpen(true);
+    };
+
+    const handleManageClick = (vehicle) => {
+        setVehicleToManage(vehicle);
+        setManageModalOpen(true);
     };
 
     const handleDeleteConfirm = () => {
@@ -112,6 +120,7 @@ function Garage() {
                                     <>
                                         <button onClick={() => navigate(`/vehicles/${v.id}/edit`)}>Edit</button>
                                         <button onClick={() => handleShareClick(v)}>Share</button>
+                                        <button onClick={() => handleManageClick(v)}>Manage Access</button>
                                         <button onClick={() => handleDeleteClick(v)}>Delete</button>
                                     </>
                                 )}
@@ -132,6 +141,12 @@ function Garage() {
                 isOpen={shareModalOpen}
                 onClose={() => setShareModalOpen(false)}
                 vehicle={vehicleToShare}
+            />
+
+            <ManageCollaboratorsModal
+                isOpen={manageModalOpen}
+                onClose={() => setManageModalOpen(false)}
+                vehicle={vehicleToManage}
             />
         </div>
     );

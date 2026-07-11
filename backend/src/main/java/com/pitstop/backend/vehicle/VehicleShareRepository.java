@@ -12,4 +12,8 @@ public interface VehicleShareRepository extends JpaRepository<VehicleShare, Long
 
     boolean existsByVehicleIdAndUserId(Long vehicleId, Long userId);
 
+    List<VehicleShare> findByVehicleId(Long vehicleId);
+
+    void deleteByVehicleIdAndUserId(Long vehicleId, Long userId);
+
 }
