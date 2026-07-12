@@ -1,3 +1,11 @@
+// Garage.jsx (UPDATED for US-19)
+//
+// Change from the existing Garage.jsx:
+//   Added "Activity Feed" button on vehicle cards (US-19)
+//   Visible on both owned and shared vehicles
+//
+// Everything else is unchanged.
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -116,8 +124,20 @@ function Garage() {
                             <div style={{ display: "flex", gap: "8px", marginTop: "12px", flexWrap: "wrap" }}>
                                 <button onClick={() => navigate(`/vehicles/${v.id}/service-log`)}>Service Log</button>
                                 <button onClick={() => navigate(`/vehicles/${v.id}/upcoming`)}>Upcoming</button>
+
+                                {/* US-19: Activity Feed button — visible on shared vehicles */}
+                                {v.shared && (
+                                    <button onClick={() => navigate(`/vehicles/${v.id}/activity`)}>
+                                        Activity Feed
+                                    </button>
+                                )}
+
                                 {!v.shared && (
                                     <>
+                                        {/* US-19: Activity Feed also visible to the owner */}
+                                        <button onClick={() => navigate(`/vehicles/${v.id}/activity`)}>
+                                            Activity Feed
+                                        </button>
                                         <button onClick={() => navigate(`/vehicles/${v.id}/edit`)}>Edit</button>
                                         <button onClick={() => handleShareClick(v)}>Share</button>
                                         <button onClick={() => handleManageClick(v)}>Manage Access</button>
