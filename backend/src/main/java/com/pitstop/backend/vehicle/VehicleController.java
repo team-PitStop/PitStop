@@ -10,9 +10,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vehicles")
+@CrossOrigin(origins = "http://localhost:5173")
 public class VehicleController {
 
     private final VehicleRepository repo;
@@ -32,49 +34,79 @@ public class VehicleController {
                 .getId();
     }
 
-    @GetMapping
-    public List<Vehicle> getAll(Authentication authentication) {
-        return repo.findByUserId(getUserId(authentication));
-    }
-
     @GetMapping("/grid")
     public List<VehicleGridDTO> getVehicleGrid(Authentication authentication) {
         Long userId = getUserId(authentication);
-
         List<VehicleGridDTO> grid = new ArrayList<>();
-        // The user's own vehicles.
+
+        // 1. Vehicles I own
         for (Vehicle vehicle : repo.findByUserId(userId)) {
             grid.add(new VehicleGridDTO(vehicle, false));
         }
-        // US-16: vehicles other users have shared WITH this user.
-        for (VehicleShare share : shareRepository.findByUserId(userId)) {
+
+        // 2. Vehicles shared with me (ONLY IF ACCEPTED)
+        for (VehicleShare share : shareRepository.findByUserIdAndStatus(userId, "ACCEPTED")) {
             repo.findById(share.getVehicleId())
                     .ifPresent(vehicle -> grid.add(new VehicleGridDTO(vehicle, true)));
         }
         return grid;
     }
 
-    // US-16: Share a vehicle with another user by their email.
+    // US-20: Get invitations the current user hasn't accepted yet
+    @GetMapping("/invitations/pending")
+    public List<Map<String, Object>> getPendingInvitations(Authentication authentication) {
+        Long userId = getUserId(authentication);
+        List<VehicleShare> pending = shareRepository.findByUserIdAndStatus(userId, "PENDING");
+        
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (VehicleShare share : pending) {
+            Vehicle v = repo.findById(share.getVehicleId()).orElse(null);
+            if (v != null) {
+                User owner = userRepository.findById(v.getUserId()).orElse(null);
+                result.add(Map.of(
+                    "inviteId", share.getId(),
+                    "vehicleName", v.getYear() + " " + v.getMake() + " " + v.getModel(),
+                    "ownerEmail", owner != null ? owner.getEmail() : "Unknown"
+                ));
+            }
+        }
+        return result;
+    }
+
+    // US-20: Accept invitation
+    @PostMapping("/invitations/{inviteId}/accept")
+    public ResponseEntity<Void> acceptInvite(@PathVariable Long inviteId, Authentication authentication) {
+        Long userId = getUserId(authentication);
+        VehicleShare share = shareRepository.findByIdAndUserId(inviteId, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invite not found"));
+        
+        share.setStatus("ACCEPTED");
+        shareRepository.save(share);
+        return ResponseEntity.ok().build();
+    }
+
+    // US-20: Decline invitation
+    @DeleteMapping("/invitations/{inviteId}/decline")
+    public ResponseEntity<Void> declineInvite(@PathVariable Long inviteId, Authentication authentication) {
+        Long userId = getUserId(authentication);
+        VehicleShare share = shareRepository.findByIdAndUserId(inviteId, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invite not found"));
+        
+        shareRepository.delete(share);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{id}/share")
-    public ResponseEntity<Void> share(@PathVariable Long id,
-                                      @RequestBody ShareRequest request,
-                                      Authentication authentication) {
+    public ResponseEntity<Void> share(@PathVariable Long id, @RequestBody ShareRequest request, Authentication authentication) {
         Long ownerId = getUserId(authentication);
+        repo.findByIdAndUserId(id, ownerId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        // Only the owner of the vehicle may share it.
-        repo.findByIdAndUserId(id, ownerId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found"));
-
-        String email = request.email() == null ? "" : request.email().trim();
-        User recipient = userRepository.findByEmail(email)
+        User recipient = userRepository.findByEmail(request.email().trim())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No user with that email"));
 
-        if (recipient.getId().equals(ownerId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You already own this vehicle");
-        }
-        if (shareRepository.existsByVehicleIdAndUserId(id, recipient.getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vehicle already shared with that user");
-        }
+        if (recipient.getId().equals(ownerId)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You already own this");
+        if (shareRepository.existsByVehicleIdAndUserId(id, recipient.getId())) 
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Already shared");
 
         shareRepository.save(new VehicleShare(id, recipient.getId()));
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -82,33 +114,21 @@ public class VehicleController {
 
     @GetMapping("/{id}/collaborators")
     public List<VehicleCollaboratorDTO> getCollaborators(@PathVariable Long id, Authentication authentication) {
-        Long requesterId = getUserId(authentication);
-
-        Vehicle vehicle = repo.findByIdAndUserId(id, requesterId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found"));
-
+        Long reqId = getUserId(authentication);
+        Vehicle vehicle = repo.findByIdAndUserId(id, reqId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         List<VehicleCollaboratorDTO> result = new ArrayList<>();
-
-        User owner = userRepository.findById(vehicle.getUserId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Owner not found"));
+        User owner = userRepository.findById(vehicle.getUserId()).orElseThrow();
         result.add(new VehicleCollaboratorDTO(owner.getId(), owner.getEmail(), "OWNER"));
-
         for (VehicleShare share : shareRepository.findByVehicleId(id)) {
-            userRepository.findById(share.getUserId())
-                    .ifPresent(user -> result.add(new VehicleCollaboratorDTO(user.getId(), user.getEmail(), "MEMBER")));
+            userRepository.findById(share.getUserId()).ifPresent(u -> 
+                result.add(new VehicleCollaboratorDTO(u.getId(), u.getEmail(), share.getStatus().equals("ACCEPTED") ? "MEMBER" : "PENDING")));
         }
-
         return result;
     }
 
     @DeleteMapping("/{id}/collaborators/{userId}")
-    public ResponseEntity<Void> removeCollaborator(@PathVariable Long id, @PathVariable Long userId,
-                                                   Authentication authentication) {
-        Long requesterId = getUserId(authentication);
-
-        repo.findByIdAndUserId(id, requesterId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found"));
-
+    public ResponseEntity<Void> removeCollaborator(@PathVariable Long id, @PathVariable Long userId, Authentication authentication) {
+        repo.findByIdAndUserId(id, getUserId(authentication)).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         shareRepository.deleteByVehicleIdAndUserId(id, userId);
         return ResponseEntity.noContent().build();
     }
@@ -119,39 +139,24 @@ public class VehicleController {
         return repo.save(vehicle);
     }
 
-    // US-5: GET a single vehicle by its ID (owner only)
     @GetMapping("/{id}")
     public ResponseEntity<Vehicle> getById(@PathVariable Long id, Authentication authentication) {
-        return repo.findByIdAndUserId(id, getUserId(authentication))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return repo.findByIdAndUserId(id, getUserId(authentication)).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    // US-5: UPDATE an existing vehicle (owner only)
     @PutMapping("/{id}")
-    public ResponseEntity<Vehicle> update(@PathVariable Long id, @RequestBody Vehicle updated,
-                                          Authentication authentication) {
-        return repo.findByIdAndUserId(id, getUserId(authentication))
-                .map(vehicle -> {
-                    vehicle.setMake(updated.getMake());
-                    vehicle.setModel(updated.getModel());
-                    vehicle.setYear(updated.getYear());
-                    vehicle.setMileage(updated.getMileage());
-                    vehicle.setNickname(updated.getNickname());
-                    vehicle.setLicensePlate(updated.getLicensePlate());
-                    return ResponseEntity.ok(repo.save(vehicle));
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Vehicle> update(@PathVariable Long id, @RequestBody Vehicle updated, Authentication authentication) {
+        return repo.findByIdAndUserId(id, getUserId(authentication)).map(v -> {
+            v.setMake(updated.getMake()); v.setModel(updated.getModel()); v.setYear(updated.getYear());
+            v.setMileage(updated.getMileage()); v.setNickname(updated.getNickname()); v.setLicensePlate(updated.getLicensePlate());
+            return ResponseEntity.ok(repo.save(v));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
-    // US-5: DELETE a vehicle (owner only)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id, Authentication authentication) {
-        return repo.findByIdAndUserId(id, getUserId(authentication))
-                .map(vehicle -> {
-                    repo.delete(vehicle);
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+        return repo.findByIdAndUserId(id, getUserId(authentication)).map(v -> {
+            repo.delete(v); return ResponseEntity.noContent().<Void>build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 }

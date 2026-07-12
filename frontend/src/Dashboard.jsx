@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import PendingInvites from './PendingInvites'; // US-20: Import component
 
 function Dashboard() {
     const [email, setEmail] = useState('');
@@ -48,6 +49,10 @@ function Dashboard() {
 
     return (
         <div style={{ padding: '40px', fontFamily: 'sans-serif' }}>
+            
+            {/* US-20: Acceptance Criteria - Visible Pending Invites */}
+            <PendingInvites />
+
             {/* US-15: Acceptance Criteria - Dashboard Banner */}
             {alerts.length > 0 && (
                 <div style={{
@@ -75,7 +80,6 @@ function Dashboard() {
                             </li>
                         ))}
                     </ul>
-                    <p style={{ fontSize: '0.9rem', marginTop: '10px' }}>Click a vehicle to log service and clear the alert.</p>
                 </div>
             )}
 
@@ -83,18 +87,8 @@ function Dashboard() {
             {email && <p>Logged in as: <strong>{email}</strong></p>}
             
             <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-                <button 
-                    onClick={() => navigate('/garage')}
-                    style={{ padding: '10px 20px', cursor: 'pointer' }}
-                >
-                    My Garage
-                </button>
-                <button 
-                    onClick={handleLogout}
-                    style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: '#f5f5f5' }}
-                >
-                    Log Out
-                </button>
+                <button onClick={() => navigate('/garage')} style={{ padding: '10px 20px', cursor: 'pointer' }}>My Garage</button>
+                <button onClick={handleLogout} style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: '#f5f5f5' }}>Log Out</button>
             </div>
         </div>
     );
