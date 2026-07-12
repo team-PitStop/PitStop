@@ -1,8 +1,8 @@
-// App.jsx (UPDATED for US-8)
+// App.jsx (UPDATED for US-19)
 //
 // Change from the existing App.jsx:
-//   Added ONE new route for the edit service entry page (US-8)
-//   AND imported the new EditServiceEntry component
+//   Added ONE new route for the activity feed page (US-19)
+//   AND imported the new ActivityFeed component
 //
 // Everything else is unchanged.
 
@@ -15,8 +15,9 @@ import EditVehicleForm from "./EditVehicleForm";
 import Garage from "./Garage";
 import AddVehicleForm from "./AddVehicleForm";
 import ServiceLog from "./ServiceLog";
-import EditServiceEntry from "./EditServiceEntry"; // US-8: NEW
-import UpcomingMaintenance from "./UpcomingMaintenance"; // US-12: NEW
+import EditServiceEntry from "./EditServiceEntry";
+import UpcomingMaintenance from "./UpcomingMaintenance";
+import ActivityFeed from "./ActivityFeed"; // US-19: NEW
 
 function App() {
   return (
@@ -42,7 +43,10 @@ function App() {
           {/* US-12: Upcoming maintenance for a vehicle */}
           <Route path="/vehicles/:id/upcoming" element={<UpcomingMaintenance />} />
 
-          {/* US-8: Edit Service Entry route (NEW) */}
+          {/* US-19: Activity feed for a shared vehicle (NEW) */}
+          <Route path="/vehicles/:id/activity" element={<ActivityFeed />} />
+
+          {/* US-8: Edit Service Entry route */}
           <Route
             path="/vehicles/:vehicleId/service-entries/:id/edit"
             element={<EditServiceEntry />}
