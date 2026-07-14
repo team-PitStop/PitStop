@@ -54,7 +54,7 @@ Most people have no idea when their oil was last changed or when their next serv
 | 2 | Jun 1 – Jun 14 | Service Logging — record and view history |
 | 3 | Jun 15 – Jun 28 | Scheduling — upcoming maintenance + reminders |
 | 4 | Jun 29 – Jul 12 | Collaboration — share vehicles with others |
-| 5 | Jul 13 – Jul 26 | Polish — dashboard, notifications, showcase prep |
+| 5 | Jul 13 – Jul 26 | Design and Deploy — dashboard, notifications, showcase prep |
 
 ---
 
