@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import PendingInvites from './PendingInvites'; // US-20: Import component
+import PendingInvites from './PendingInvites';
 
 function Dashboard() {
     const [email, setEmail] = useState('');
@@ -16,7 +16,6 @@ function Dashboard() {
             return;
         }
 
-        // Fetch User Info
         axios.get('http://localhost:8080/api/auth/me', {
             headers: { Authorization: `Bearer ${token}` }
         })
@@ -26,7 +25,6 @@ function Dashboard() {
             navigate('/login');
         });
 
-        // US-15: Fetch Overdue Alerts
         axios.get('http://localhost:8080/api/alerts/overdue', {
             headers: { Authorization: `Bearer ${token}` }
         })
@@ -40,55 +38,36 @@ function Dashboard() {
         });
     }, [navigate]);
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/login');
-    };
-
-    if (loading) return <p style={{ padding: '40px' }}>Loading PitStop...</p>;
+    if (loading) return <p>Loading Dashboard...</p>;
 
     return (
-        <div style={{ padding: '40px', fontFamily: 'sans-serif' }}>
-            
-            {/* US-20: Acceptance Criteria - Visible Pending Invites */}
+        <div>
+            <h1>Dashboard</h1>
+            <p>Welcome back, <strong>{email}</strong></p>
+
             <PendingInvites />
 
-            {/* US-15: Acceptance Criteria - Dashboard Banner */}
             {alerts.length > 0 && (
-                <div style={{
-                    backgroundColor: '#ffebee',
-                    border: '2px solid #ef5350',
-                    borderRadius: '8px',
-                    padding: '20px',
-                    marginBottom: '30px',
-                    color: '#c62828'
-                }}>
-                    <h2 style={{ margin: '0 0 10px 0' }}>⚠️ Overdue Maintenance ({alerts.length})</h2>
-                    <ul style={{ listStyle: 'none', padding: 0 }}>
+                <div className="card" style={{ borderTopColor: 'var(--error-red)', backgroundColor: '#fff5f5' }}>
+                    <h2 style={{ color: 'var(--error-red)' }}>⚠️ Overdue Maintenance</h2>
+                    <ul style={{ paddingLeft: '20px' }}>
                         {alerts.map((alert, index) => (
-                            <li 
-                                key={index} 
+                            <li key={index} 
                                 onClick={() => navigate(`/vehicles/${alert.vehicleId}/service-log`)}
-                                style={{ 
-                                    cursor: 'pointer', 
-                                    padding: '10px', 
-                                    borderBottom: '1px solid #ffcdd2',
-                                    textDecoration: 'underline'
-                                }}
-                            >
-                                <strong>{alert.vehicleName}</strong>: {alert.serviceType} is past due by {alert.reason.toLowerCase()}!
+                                style={{ cursor: 'pointer', marginBottom: '8px', color: '#b71c1c', textDecoration: 'underline' }}>
+                                {alert.vehicleName}: {alert.serviceType} is past due!
                             </li>
                         ))}
                     </ul>
                 </div>
             )}
 
-            <h1>Welcome to PitStop</h1>
-            {email && <p>Logged in as: <strong>{email}</strong></p>}
-            
-            <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-                <button onClick={() => navigate('/garage')} style={{ padding: '10px 20px', cursor: 'pointer' }}>My Garage</button>
-                <button onClick={handleLogout} style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: '#f5f5f5' }}>Log Out</button>
+            <div className="card">
+                <h2>Quick Actions</h2>
+                <div style={{ display: 'flex', gap: '15px' }}>
+                    <button className="btn-primary" onClick={() => navigate('/garage')}>Open My Garage</button>
+                    <button className="btn-outline" onClick={() => navigate('/vehicles/new')}>Add New Vehicle</button>
+                </div>
             </div>
         </div>
     );
