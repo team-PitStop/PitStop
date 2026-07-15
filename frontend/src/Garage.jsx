@@ -1,11 +1,3 @@
-// Garage.jsx (UPDATED for US-19)
-//
-// Change from the existing Garage.jsx:
-//   Added "Activity Feed" button on vehicle cards (US-19)
-//   Visible on both owned and shared vehicles
-//
-// Everything else is unchanged.
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -50,16 +42,6 @@ function Garage() {
         setModalOpen(true);
     };
 
-    const handleShareClick = (vehicle) => {
-        setVehicleToShare(vehicle);
-        setShareModalOpen(true);
-    };
-
-    const handleManageClick = (vehicle) => {
-        setVehicleToManage(vehicle);
-        setManageModalOpen(true);
-    };
-
     const handleDeleteConfirm = () => {
         const token = localStorage.getItem("token");
         axios
@@ -72,7 +54,7 @@ function Garage() {
                 setSelectedVehicle(null);
             })
             .catch(() => {
-                alert("Could not delete vehicle. Please try again.");
+                alert("Could not delete vehicle.");
                 setModalOpen(false);
             });
     };
@@ -80,68 +62,30 @@ function Garage() {
     if (loading) return <p>Loading your garage...</p>;
 
     return (
-        <div style={{ padding: "40px" }}>
+        <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
                 <h1>My Garage</h1>
-                <div style={{ display: "flex", gap: "12px" }}>
-                    <button onClick={() => navigate("/vehicles/new")}>Add Vehicle</button>
-                    <button onClick={() => navigate("/dashboard")}>Back to Dashboard</button>
-                </div>
+                <button className="btn-primary" onClick={() => navigate("/vehicles/new")}>+ Add Vehicle</button>
             </div>
 
             {vehicles.length === 0 ? (
-                <p>No vehicles in your garage yet.</p>
+                <div className="card"><p>No vehicles in your garage yet.</p></div>
             ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "16px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "20px" }}>
                     {vehicles.map((v) => (
-                        <div
-                            key={v.id}
-                            style={{
-                                border: "1px solid #ccc",
-                                borderRadius: "8px",
-                                padding: "16px",
-                            }}
-                        >
-                            <h3 style={{ margin: "0 0 8px" }}>
-                                {v.year} {v.make} {v.model}
-                            </h3>
-                            {v.shared && (
-                                <span
-                                    style={{
-                                        display: "inline-block",
-                                        fontSize: "12px",
-                                        color: "#555",
-                                        background: "#eef",
-                                        borderRadius: "4px",
-                                        padding: "2px 8px",
-                                        marginBottom: "4px",
-                                    }}
-                                >
-                                    Shared with you
-                                </span>
-                            )}
-                            <p style={{ margin: "4px 0" }}>Mileage: {v.mileage.toLocaleString()} mi</p>
-                            <div style={{ display: "flex", gap: "8px", marginTop: "12px", flexWrap: "wrap" }}>
-                                <button onClick={() => navigate(`/vehicles/${v.id}/service-log`)}>Service Log</button>
-                                <button onClick={() => navigate(`/vehicles/${v.id}/upcoming`)}>Upcoming</button>
-
-                                {/* US-19: Activity Feed button — visible on shared vehicles */}
-                                {v.shared && (
-                                    <button onClick={() => navigate(`/vehicles/${v.id}/activity`)}>
-                                        Activity Feed
-                                    </button>
-                                )}
-
+                        <div key={v.id} className="card">
+                            <h3 style={{ marginBottom: "5px" }}>{v.year} {v.make} {v.model}</h3>
+                            {v.shared && <span style={{color: 'var(--fiu-gold)', fontWeight: 'bold', fontSize: '12px'}}>SHARED ACCESS</span>}
+                            <p style={{ color: 'var(--text-light)', margin: '10px 0' }}>Mileage: {v.mileage.toLocaleString()} mi</p>
+                            
+                            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "15px" }}>
+                                <button className="btn-primary" style={{padding: '5px 10px', fontSize: '12px'}} onClick={() => navigate(`/vehicles/${v.id}/service-log`)}>Log</button>
+                                <button className="btn-outline" style={{padding: '5px 10px', fontSize: '12px'}} onClick={() => navigate(`/vehicles/${v.id}/upcoming`)}>Upcoming</button>
+                                <button className="btn-outline" style={{padding: '5px 10px', fontSize: '12px'}} onClick={() => navigate(`/vehicles/${v.id}/activity`)}>Activity</button>
                                 {!v.shared && (
                                     <>
-                                        {/* US-19: Activity Feed also visible to the owner */}
-                                        <button onClick={() => navigate(`/vehicles/${v.id}/activity`)}>
-                                            Activity Feed
-                                        </button>
-                                        <button onClick={() => navigate(`/vehicles/${v.id}/edit`)}>Edit</button>
-                                        <button onClick={() => handleShareClick(v)}>Share</button>
-                                        <button onClick={() => handleManageClick(v)}>Manage Access</button>
-                                        <button onClick={() => handleDeleteClick(v)}>Delete</button>
+                                        <button className="btn-outline" style={{padding: '5px 10px', fontSize: '12px'}} onClick={() => navigate(`/vehicles/${v.id}/edit`)}>Edit</button>
+                                        <button className="btn-danger" style={{padding: '5px 10px', fontSize: '12px'}} onClick={() => handleDeleteClick(v)}>Delete</button>
                                     </>
                                 )}
                             </div>
@@ -150,24 +94,9 @@ function Garage() {
                 </div>
             )}
 
-            <DeleteConfirmationModal
-                isOpen={modalOpen}
-                onClose={() => setModalOpen(false)}
-                onConfirm={handleDeleteConfirm}
-                vehicleName={selectedVehicle ? `${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model}` : ""}
-            />
-
-            <ShareVehicleModal
-                isOpen={shareModalOpen}
-                onClose={() => setShareModalOpen(false)}
-                vehicle={vehicleToShare}
-            />
-
-            <ManageCollaboratorsModal
-                isOpen={manageModalOpen}
-                onClose={() => setManageModalOpen(false)}
-                vehicle={vehicleToManage}
-            />
+            <DeleteConfirmationModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onConfirm={handleDeleteConfirm} vehicleName={selectedVehicle ? `${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model}` : ""} />
+            <ShareVehicleModal isOpen={shareModalOpen} onClose={() => setShareModalOpen(false)} vehicle={vehicleToShare} />
+            <ManageCollaboratorsModal isOpen={manageModalOpen} onClose={() => setManageModalOpen(false)} vehicle={vehicleToManage} />
         </div>
     );
 }

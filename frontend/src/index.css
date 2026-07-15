@@ -1,13 +1,85 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* FIU Color Palette */
+:root {
+  --fiu-blue: #081E3F;      /* Panther Blue */
+  --fiu-gold: #B6862C;      /* Roary Gold */
+  --fiu-gold-light: #d4a04d;
+  --fiu-blue-light: #15315e;
+  --bg-gray: #f2f4f7;       /* MyFIU Background */
+  --white: #ffffff;
+  --error-red: #c62828;
+  --text-dark: #212121;
+  --text-light: #616161;
+  --shadow: 0 2px 4px rgba(0,0,0,0.08);
+  --border-radius: 4px;     /* MyFIU uses sharper corners */
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-gray);
+  color: var(--text-dark);
+}
+
+/* MyFIU style Card */
+.card {
+  background: var(--white);
+  border-top: 4px solid var(--fiu-gold); /* Iconic gold top border */
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+/* Global Buttons */
+button {
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 20px;
+  transition: background 0.2s;
+  border: none;
+}
+
+.btn-primary {
+  background-color: var(--fiu-blue);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background-color: var(--fiu-blue-light);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 2px solid var(--fiu-blue);
+  color: var(--fiu-blue);
+}
+
+.btn-danger {
+  background-color: var(--error-red);
+  color: var(--white);
+}
+
+/* Form Inputs standard */
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: var(--border-radius);
+  margin-top: 8px;
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--fiu-blue);
+  box-shadow: 0 0 0 2px rgba(8, 30, 63, 0.1);
+}
+
+h1, h2, h3 {
+  color: var(--fiu-blue);
+  margin-top: 0;
 }
