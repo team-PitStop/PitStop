@@ -31,6 +31,7 @@ function EditServiceEntry() {
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
   const [createdByEmail, setCreatedByEmail] = useState("");
+  const [loadError, setLoadError] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -88,11 +89,11 @@ function EditServiceEntry() {
         setCreatedByEmail(data.createdByEmail);
         setLoading(false);
       })
-      .catch((error) => {
-        console.error("Error loading service entry:", error);
-        setLoading(false);
-        alert("Could not load service entry.");
-      });
+        .catch((error) => {
+          console.error("Error loading service entry:", error);
+          setLoading(false);
+          setLoadError("Could not load this service entry. Please try refreshing the page.");
+        });
   }, [vehicleId, id, navigate]);
 
   const handleChange = (e) => {
@@ -137,36 +138,42 @@ function EditServiceEntry() {
       .then(() => {
         navigate(`/vehicles/${vehicleId}/service-log`);
       })
-      .catch((error) => {
-        console.error("Error saving service entry:", error);
-        alert("Could not save changes. Please try again.");
-      });
+        .catch((error) => {
+          console.error("Error saving service entry:", error);
+          setLoadError("Could not save changes. Please try again.");
+        });
   };
 
-  if (loading) return <p>Loading service entry...</p>;
+  if (loading) return <div className="card" style={{ maxWidth: "520px" }}><p>Loading service entry...</p></div>;
 
   if (!isOwner) {
     return (
-      <div style={{ padding: "40px" }}>
-        <h2>Edit Service Entry</h2>
-        <p style={{ color: "red", marginBottom: "20px" }}>
-          Only the vehicle owner can edit service entries. This entry was created by {createdByEmail}.
-        </p>
-        <button onClick={() => navigate(`/vehicles/${vehicleId}/service-log`)}>
-          Back to Service Log
-        </button>
-      </div>
+        <div className="card" style={{ maxWidth: "520px" }}>
+          <h2>Edit Service Entry</h2>
+          <p style={{ color: "var(--error-red)", marginBottom: "20px" }}>
+            Only the vehicle owner can edit service entries. This entry was created by {createdByEmail}.
+          </p>
+          <button className="btn-outline" onClick={() => navigate(`/vehicles/${vehicleId}/service-log`)}>
+            Back to Service Log
+          </button>
+        </div>
     );
   }
 
   return (
-    <div style={{ padding: "40px", maxWidth: "520px" }}>
-      <h2>Edit Service Entry</h2>
-      <p style={{ fontSize: "0.9rem", color: "#666", marginBottom: "20px" }}>
-        Created by: {createdByEmail}
-      </p>
+      <div style={{ maxWidth: "520px" }}>
+        <h2>Edit Service Entry</h2>
+        <p style={{ fontSize: "0.9rem", color: "var(--text-light)", marginBottom: "20px" }}>
+          Created by: {createdByEmail}
+        </p>
 
-      <form onSubmit={handleSubmit}>
+        {loadError && (
+            <div className="card" style={{ borderTopColor: "var(--error-red)", backgroundColor: "#fff5f5" }}>
+              <p style={{ color: "var(--error-red)", margin: 0 }}>{loadError}</p>
+            </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="card">
         <label>
           Service Type *
           <select name="serviceType" value={entry.serviceType} onChange={handleChange}>
@@ -185,26 +192,26 @@ function EditServiceEntry() {
               value={customType}
               onChange={(e) => setCustomType(e.target.value)}
             />
-            {errors.customType && <span style={{ color: "red" }}>{errors.customType}</span>}
+            {errors.customType && <span style={{ color: "var(--error-red)" }}>{errors.customType}</span>}
           </label>
         )}
 
         <label style={{ display: "block", marginTop: "10px" }}>
           Date *
           <input type="date" name="serviceDate" value={entry.serviceDate} onChange={handleChange} />
-          {errors.serviceDate && <span style={{ color: "red" }}>{errors.serviceDate}</span>}
+          {errors.serviceDate && <span style={{ color: "var(--error-red)" }}>{errors.serviceDate}</span>}
         </label>
 
         <label style={{ display: "block", marginTop: "10px" }}>
           Mileage *
           <input type="number" name="mileage" value={entry.mileage} onChange={handleChange} />
-          {errors.mileage && <span style={{ color: "red" }}>{errors.mileage}</span>}
+          {errors.mileage && <span style={{ color: "var(--error-red)" }}>{errors.mileage}</span>}
         </label>
 
         <label style={{ display: "block", marginTop: "10px" }}>
           Cost *
           <input type="number" step="0.01" name="cost" value={entry.cost} onChange={handleChange} />
-          {errors.cost && <span style={{ color: "red" }}>{errors.cost}</span>}
+          {errors.cost && <span style={{ color: "var(--error-red)" }}>{errors.cost}</span>}
         </label>
 
         <label style={{ display: "block", marginTop: "10px" }}>
@@ -212,12 +219,12 @@ function EditServiceEntry() {
           <textarea name="notes" value={entry.notes || ""} onChange={handleChange} rows="4" />
         </label>
 
-        <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
-          <button type="submit">Save Changes</button>
-          <button type="button" onClick={() => navigate(`/vehicles/${vehicleId}/service-log`)}>
-            Cancel
-          </button>
-        </div>
+            <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
+                <button type="submit" className="btn-primary">Save Changes</button>
+                <button type="button" className="btn-outline" onClick={() => navigate(`/vehicles/${vehicleId}/service-log`)}>
+                    Cancel
+                </button>
+            </div>
       </form>
     </div>
   );

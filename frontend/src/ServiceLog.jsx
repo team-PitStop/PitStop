@@ -39,6 +39,7 @@ function ServiceLog() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
+  const [loadError, setLoadError] = useState(null);
 
   // US-8: State for the delete confirmation modal
   const [entryToDelete, setEntryToDelete] = useState(null);
@@ -75,8 +76,8 @@ function ServiceLog() {
           setLoading(false);
         })
         .catch(() => {
-          setLoading(false);
-          alert("Could not load service entries.");
+            setLoading(false);
+            setLoadError("Could not load service entries. Please try refreshing the page.");
         });
   }, [id, navigate]);
 
@@ -169,7 +170,7 @@ function ServiceLog() {
   if (loading) return <p>Loading service log...</p>;
 
   return (
-      <div style={{ padding: "40px" }}>
+      <div>
         <div
             style={{
               display: "flex",
@@ -179,10 +180,15 @@ function ServiceLog() {
             }}
         >
           <h2>Service Log</h2>
-          <button onClick={() => navigate("/garage")}>Back to Garage</button>
+            <button className="btn-outline" onClick={() => navigate("/garage")}>Back to Garage</button>
         </div>
+          {loadError && (
+              <div className="card" style={{ borderTopColor: "var(--error-red)", backgroundColor: "#fff5f5" }}>
+                  <p style={{ color: "var(--error-red)", margin: 0 }}>{loadError}</p>
+              </div>
+          )}
 
-        <form onSubmit={handleSubmit} style={{ marginBottom: "32px", maxWidth: "520px" }}>
+          <form onSubmit={handleSubmit} className="card" style={{ marginBottom: "32px", maxWidth: "520px" }}>
           <label>
             Service Type *
             <select name="serviceType" value={form.serviceType} onChange={handleChange}>
@@ -249,48 +255,71 @@ function ServiceLog() {
           </label>
 
           <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
-            <button type="submit">Save Service Entry</button>
-            <button type="button" onClick={() => navigate("/garage")}>
-              Cancel
-            </button>
+              <button type="submit" className="btn-primary">Save Service Entry</button>
+              <button type="button" className="btn-outline" onClick={() => navigate("/garage")}>
+                  Cancel
+              </button>
           </div>
         </form>
 
         <div>
           <h3>Service History</h3>
-          {entries.length === 0 ? (
-              <p>No service entries yet.</p>
-          ) : (
-              <div style={{ display: "grid", gap: "16px" }}>
-                {entries.map((entry) => (
-                    <div
-                        key={entry.id}
-                        style={{
-                          border: "1px solid #ccc",
-                          borderRadius: "8px",
-                          padding: "16px",
-                        }}
-                    >
-                      <strong>{entry.serviceType.replace(/_/g, " ")}</strong>
-                      <p>
-                        Date: {entry.serviceDate} | Mileage: {entry.mileage} mi | Cost: ${entry.cost}
-                      </p>
-                      {entry.notes && <p>Notes: {entry.notes}</p>}
-                      <p style={{ fontSize: "0.85rem", color: "#666", marginBottom: "8px" }}>
-                        Created by: {entry.createdByEmail}
-                      </p>
-
-                      {/* Only show Edit and Delete buttons if the current user is the owner */}
-                      {isOwner && (
-                          <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-                            <button onClick={() => handleEditClick(entry.id)}>Edit</button>
-                            <button onClick={() => handleDeleteClick(entry)}>Delete</button>
-                          </div>
-                      )}
-                    </div>
-                ))}
-              </div>
-          )}
+            {entries.length === 0 ? (
+                <div className="card"><p>No service entries yet.</p></div>
+            ) : (
+                <div className="card" style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead>
+                        <tr style={{ borderBottom: "2px solid var(--fiu-blue)", textAlign: "left" }}>
+                            <th style={{ padding: "8px" }}>Service</th>
+                            <th style={{ padding: "8px" }}>Date</th>
+                            <th style={{ padding: "8px" }}>Mileage</th>
+                            <th style={{ padding: "8px" }}>Cost</th>
+                            <th style={{ padding: "8px" }}>Created By</th>
+                            {isOwner && <th style={{ padding: "8px" }}>Actions</th>}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {entries.map((entry) => (
+                            <tr key={entry.id} style={{ borderBottom: "1px solid #eee" }}>
+                                <td style={{ padding: "8px" }}>
+                                    {entry.serviceType.replace(/_/g, " ")}
+                                    {entry.notes && (
+                                        <div style={{ fontSize: "0.8rem", color: "var(--text-light)" }}>{entry.notes}</div>
+                                    )}
+                                </td>
+                                <td style={{ padding: "8px" }}>{entry.serviceDate}</td>
+                                <td style={{ padding: "8px" }}>{entry.mileage} mi</td>
+                                <td style={{ padding: "8px" }}>${entry.cost}</td>
+                                <td style={{ padding: "8px", fontSize: "0.85rem", color: "var(--text-light)" }}>
+                                    {entry.createdByEmail}
+                                </td>
+                                {isOwner && (
+                                    <td style={{ padding: "8px" }}>
+                                        <div style={{ display: "flex", gap: "8px" }}>
+                                            <button
+                                                className="btn-outline"
+                                                style={{ padding: "5px 10px", fontSize: "12px" }}
+                                                onClick={() => handleEditClick(entry.id)}
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                className="btn-danger"
+                                                style={{ padding: "5px 10px", fontSize: "12px" }}
+                                                onClick={() => handleDeleteClick(entry)}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                )}
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
 
         {/* US-8: Delete confirmation modal (reused from US-5) */}

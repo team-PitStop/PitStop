@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const token = localStorage.getItem('token');
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Hide Nav on Login/Register
   const authPaths = ['/login', '/register'];
@@ -24,9 +25,18 @@ function Navbar() {
           <span style={styles.fiuTag}> | FIU</span>
         </Link>
 
-        <div style={styles.navLinks}>
-          <Link to="/dashboard" style={location.pathname === '/dashboard' ? styles.activeLink : styles.link}>Dashboard</Link>
-          <Link to="/garage" style={location.pathname.startsWith('/garage') || location.pathname.startsWith('/vehicles') ? styles.activeLink : styles.link}>My Garage</Link>
+        <button
+            className="navbar-hamburger"
+            style={styles.hamburgerBtn}
+            onClick={() => setMenuOpen((prev) => !prev)}
+            aria-label="Toggle navigation menu"
+        >
+          {menuOpen ? '✕' : '☰'}
+        </button>
+
+        <div className={`navbar-links${menuOpen ? ' open' : ''}`} style={styles.navLinks}>
+          <Link to="/dashboard" style={location.pathname === '/dashboard' ? styles.activeLink : styles.link} onClick={() => setMenuOpen(false)}>Dashboard</Link>
+          <Link to="/garage" style={location.pathname.startsWith('/garage') || location.pathname.startsWith('/vehicles') ? styles.activeLink : styles.link} onClick={() => setMenuOpen(false)} >My Garage</Link>
           <button onClick={handleLogout} style={styles.logoutBtn}>Sign Out</button>
         </div>
       </div>
@@ -65,7 +75,6 @@ const styles = {
   brandGold: { color: '#B6862C' },
   fiuTag: { color: 'white', fontSize: '14px', marginLeft: '8px', fontWeight: '300' },
   navLinks: {
-    display: 'flex',
     gap: '25px',
     alignItems: 'center',
   },
@@ -90,7 +99,14 @@ const styles = {
     color: '#B6862C',
     padding: '5px 15px',
     fontSize: '12px',
-  }
+  },
+  hamburgerBtn: {
+    background: 'transparent',
+    border: 'none',
+    color: 'white',
+    fontSize: '24px',
+    padding: '4px 8px',
+  },
 };
 
 export default Navbar;
