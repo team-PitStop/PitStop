@@ -74,6 +74,8 @@ function UpcomingMaintenance() {
     actualCost: "",
   });
   const [completeErrors, setCompleteErrors] = useState({});
+  const [loadError, setLoadError] = useState(null);
+  const [formError, setFormError] = useState(null);
 
   const loadUpcoming = () => {
     const token = localStorage.getItem("token");
@@ -85,10 +87,10 @@ function UpcomingMaintenance() {
         setUpcoming(response.data);
         setLoading(false);
       })
-      .catch(() => {
-        setLoading(false);
-        alert("Could not load upcoming maintenance.");
-      });
+        .catch(() => {
+          setLoading(false);
+          setLoadError("Could not load upcoming maintenance. Please try refreshing the page.");
+        });
   };
 
   useEffect(() => {
@@ -175,14 +177,14 @@ function UpcomingMaintenance() {
         setSuggestionApplied(false);
         loadUpcoming(); // refresh so the new item appears, re-sorted
       })
-      .catch((error) => {
-        if (error.response?.status === 401) {
-          alert("Session expired. Please log in again.");
-          navigate("/login");
-          return;
-        }
-        alert("Could not schedule maintenance.");
-      });
+        .catch((error) => {
+          if (error.response?.status === 401) {
+            setFormError("Session expired. Please log in again.");
+            navigate("/login");
+            return;
+          }
+          setFormError("Could not schedule maintenance. Please try again.");
+        });
   };
 
   const handleCompleteClick = (item) => {
@@ -225,31 +227,43 @@ function UpcomingMaintenance() {
         setCompleteForm({ actualDate: "", actualMileage: "", actualCost: "" });
         loadUpcoming();
       })
-      .catch((error) => {
-        if (error.response?.status === 401) {
-          alert("Session expired. Please log in again.");
-          navigate("/login");
-          return;
-        }
-        const message = error.response?.data?.message || error.message || "Could not mark maintenance as done.";
-        alert(message);
-      });
+        .catch((error) => {
+          if (error.response?.status === 401) {
+            setFormError("Session expired. Please log in again.");
+            navigate("/login");
+            return;
+          }
+          const message = error.response?.data?.message || error.message || "Could not mark maintenance as done.";
+          setCompleteErrors({ submit: message });
+        });
   };
 
-  if (loading) return <p style={{ padding: "40px" }}>Loading upcoming maintenance...</p>;
+  if (loading) return <div className="card"><p>Loading upcoming maintenance...</p></div>;
 
   const currentInterval = maintenanceIntervals[form.serviceType];
 
   return (
-    <div style={{ padding: "40px" }}>
+    <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
         <h2>Upcoming Maintenance</h2>
-        <button onClick={() => navigate("/garage")}>Back to Garage</button>
+        <button className="btn-outline" onClick={() => navigate("/garage")}>Back to Garage</button>
       </div>
+
+      {loadError && (
+          <div className="card" style={{ borderTopColor: "var(--error-red)", backgroundColor: "#fff5f5" }}>
+            <p style={{ color: "var(--error-red)", margin: 0 }}>{loadError}</p>
+          </div>
+      )}
+
+      {formError && (
+          <div className="card" style={{ borderTopColor: "var(--error-red)", backgroundColor: "#fff5f5" }}>
+            <p style={{ color: "var(--error-red)", margin: 0 }}>{formError}</p>
+          </div>
+      )}
 
       {/* The list, sorted by urgency and color-coded */}
       {upcoming.length === 0 ? (
-        <p>No upcoming maintenance scheduled.</p>
+          <div className="card"><p>No upcoming maintenance scheduled.</p></div>
       ) : (
         <div style={{ display: "grid", gap: "16px", maxWidth: "640px" }}>
           {upcoming.map((item) => {
@@ -271,7 +285,7 @@ function UpcomingMaintenance() {
 
                 {isOwner && (
                   <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
-                    <button type="button" onClick={() => handleCompleteClick(item)}>
+                    <button type="button" className="btn-outline" onClick={() => handleCompleteClick(item)}>
                       Mark as Done
                     </button>
                   </div>
@@ -292,7 +306,7 @@ function UpcomingMaintenance() {
                         onChange={handleCompleteChange}
                       />
                       {completeErrors.actualDate && (
-                        <span style={{ color: "red", display: "block" }}>{completeErrors.actualDate}</span>
+                        <span style={{ color: "var(--error-red)", display: "block" }}>{completeErrors.actualDate}</span>
                       )}
                     </label>
                     <label style={{ display: "block", marginBottom: "8px" }}>
@@ -304,7 +318,7 @@ function UpcomingMaintenance() {
                         onChange={handleCompleteChange}
                       />
                       {completeErrors.actualMileage && (
-                        <span style={{ color: "red", display: "block" }}>{completeErrors.actualMileage}</span>
+                        <span style={{ color: "var(--error-red)", display: "block" }}>{completeErrors.actualMileage}</span>
                       )}
                     </label>
                     <label style={{ display: "block", marginBottom: "8px" }}>
@@ -317,14 +331,17 @@ function UpcomingMaintenance() {
                         onChange={handleCompleteChange}
                       />
                       {completeErrors.actualCost && (
-                        <span style={{ color: "red", display: "block" }}>{completeErrors.actualCost}</span>
+                        <span style={{ color: "var(--error-red)", display: "block" }}>{completeErrors.actualCost}</span>
                       )}
                     </label>
+                    {completeErrors.submit && (
+                        <p style={{ color: "var(--error-red)", marginBottom: "8px" }}>{completeErrors.submit}</p>
+                    )}
                     <div style={{ display: "flex", gap: "8px" }}>
-                      <button type="button" onClick={() => handleCompleteSubmit(item.id)}>
+                      <button type="button" className="btn-primary" onClick={() => handleCompleteSubmit(item.id)}>
                         Save to History
                       </button>
-                      <button type="button" onClick={handleCancelComplete}>
+                      <button type="button" className="btn-outline" onClick={handleCancelComplete}>
                         Cancel
                       </button>
                     </div>
@@ -376,7 +393,7 @@ function UpcomingMaintenance() {
               <textarea name="notes" value={form.notes} onChange={handleChange} rows="3" />
             </label>
 
-            <button type="submit" style={{ marginTop: "12px" }}>Schedule Maintenance</button>
+            <button type="submit" className="btn-primary" style={{ marginTop: "12px" }}>Schedule Maintenance</button>
           </form>
         </div>
       ) : (

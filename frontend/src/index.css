@@ -13,6 +13,10 @@
   --border-radius: 4px;     /* MyFIU uses sharper corners */
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -82,4 +86,36 @@ input:focus {
 h1, h2, h3 {
   color: var(--fiu-blue);
   margin-top: 0;
+}
+
+.navbar-links {
+  display: flex;
+}
+
+/* Mobile breakpoint */
+@media (max-width: 640px) {
+  .navbar-links {
+    display: none;
+  }
+  .navbar-links.open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 65px;
+    left: 0;
+    right: 0;
+    background-color: var(--fiu-blue);
+    padding: 20px;
+    gap: 16px;
+    box-shadow: var(--shadow);
+  }
+  .navbar-hamburger {
+    display: block;
+  }
+}
+
+@media (min-width: 641px) {
+  .navbar-hamburger {
+    display: none;
+  }
 }
