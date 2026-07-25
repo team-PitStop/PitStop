@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
 function PendingInvites() {
     const [invites, setInvites] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [status, setStatus] = useState(null); // { type: 'success'|'error', message }
+    const statusTimer = useRef(null);
     const token = localStorage.getItem('token');
 
     const fetchInvites = () => {
+        setStatus(null);
         axios.get('http://localhost:8080/api/vehicles/invitations/pending', {
             headers: { Authorization: `Bearer ${token}` }
         })
@@ -21,38 +24,59 @@ function PendingInvites() {
         fetchInvites();
     }, []);
 
+    // cleanup status timer on unmount
+    useEffect(() => {
+        return () => { if (statusTimer.current) clearTimeout(statusTimer.current); };
+    }, []);
+
+    const clearStatusLater = () => {
+        if (statusTimer.current) clearTimeout(statusTimer.current);
+        statusTimer.current = setTimeout(() => setStatus(null), 4000);
+    };
+
     const handleAction = async (inviteId, action) => {
         try {
             if (action === 'accept') {
                 await axios.post(`http://localhost:8080/api/vehicles/invitations/${inviteId}/accept`, {}, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                alert("Invitation accepted! Vehicle added to garage.");
+                setStatus({ type: 'success', message: 'Invitation accepted! Vehicle added to garage.' });
             } else {
                 await axios.delete(`http://localhost:8080/api/vehicles/invitations/${inviteId}/decline`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                alert("Invitation declined.");
+                setStatus({ type: 'success', message: 'Invitation declined.' });
             }
             fetchInvites(); // Refresh list after action
+            clearStatusLater();
         } catch (err) {
-            alert("Error processing invitation.");
+            setStatus({ type: 'error', message: err.response?.data?.message || 'Error processing invitation.' });
+            clearStatusLater();
         }
     };
 
-    if (loading || invites.length === 0) return null;
+    if (loading) return null;
+
+    if (invites.length === 0 && !status) return null;
 
     return (
-        <div style={{ backgroundColor: '#e3f2fd', border: '1px solid #2196f3', borderRadius: '8px', padding: '20px', marginBottom: '20px' }}>
-            <h3 style={{ marginTop: 0, color: '#0d47a1' }}>📩 Pending Vehicle Invitations</h3>
+        <div className="card">
+            <h3>📩 Pending Vehicle Invitations</h3>
+
+            {status && (
+                <p style={{ color: status.type === 'success' ? 'green' : 'crimson', marginTop: '8px' }}>
+                    {status.message}
+                </p>
+            )}
+
             {invites.map(invite => (
-                <div key={invite.inviteId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #bbdefb' }}>
-                    <p style={{ margin: 0 }}>
-                        <strong>{invite.ownerEmail}</strong> invited you to help track their <strong>{invite.vehicleName}</strong>.
+                <div key={invite.inviteId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid #eee' }}>
+                    <p style={{ margin: 0, color: 'var(--text-light)' }}>
+                        <strong style={{ color: 'var(--text-dark)' }}>{invite.ownerEmail}</strong> invited you to help track their <strong style={{ color: 'var(--text-dark)' }}>{invite.vehicleName}</strong>.
                     </p>
-                    <div>
-                        <button onClick={() => handleAction(invite.inviteId, 'accept')} style={{ marginRight: '8px', backgroundColor: '#4caf50', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Accept</button>
-                        <button onClick={() => handleAction(invite.inviteId, 'decline')} style={{ backgroundColor: '#f44336', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer' }}>Decline</button>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button className="btn-primary" onClick={() => handleAction(invite.inviteId, 'accept')}>Accept</button>
+                        <button className="btn-danger" onClick={() => handleAction(invite.inviteId, 'decline')}>Decline</button>
                     </div>
                 </div>
             ))}

@@ -14,6 +14,7 @@ function Garage() {
     const [vehicleToShare, setVehicleToShare] = useState(null);
     const [manageModalOpen, setManageModalOpen] = useState(false);
     const [vehicleToManage, setVehicleToManage] = useState(null);
+    const [hasCollaborators, setHasCollaborators] = useState({});
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -27,8 +28,30 @@ function Garage() {
             .get("http://localhost:8080/api/vehicles/grid", {
                 headers: { Authorization: `Bearer ${token}` },
             })
-            .then((response) => {
-                setVehicles(response.data);
+            .then(async (response) => {
+                const data = response.data;
+                setVehicles(data);
+
+                // For owned vehicles, check whether the owner has shared them with anyone.
+                // This controls whether the "Manage Collaborators" button should be shown.
+                const token = localStorage.getItem("token");
+                const owned = data.filter((veh) => !veh.shared);
+                const map = {};
+                await Promise.all(
+                    owned.map(async (veh) => {
+                        try {
+                            const res = await axios.get(`http://localhost:8080/api/vehicles/${veh.id}/collaborators`, {
+                                headers: { Authorization: `Bearer ${token}` },
+                            });
+                            // collaborators list always includes the owner; >1 means someone else was invited/added
+                            map[veh.id] = Array.isArray(res.data) && res.data.length > 1;
+                        } catch (e) {
+                            // If the request fails, assume no collaborators (silently)
+                            map[veh.id] = false;
+                        }
+                    })
+                );
+                setHasCollaborators(map);
                 setLoading(false);
             })
             .catch(() => {
@@ -84,6 +107,10 @@ function Garage() {
                                 <button className="btn-outline" style={{padding: '5px 10px', fontSize: '12px'}} onClick={() => navigate(`/vehicles/${v.id}/activity`)}>Activity</button>
                                 {!v.shared && (
                                     <>
+                                        <button className="btn-outline" style={{padding: '5px 10px', fontSize: '12px'}} onClick={() => { setVehicleToShare(v); setShareModalOpen(true); }}>Share</button>
+                                        {hasCollaborators[v.id] && (
+                                            <button className="btn-outline" style={{padding: '5px 10px', fontSize: '12px'}} onClick={() => { setVehicleToManage(v); setManageModalOpen(true); }}>Manage Collaborators</button>
+                                        )}
                                         <button className="btn-outline" style={{padding: '5px 10px', fontSize: '12px'}} onClick={() => navigate(`/vehicles/${v.id}/edit`)}>Edit</button>
                                         <button className="btn-danger" style={{padding: '5px 10px', fontSize: '12px'}} onClick={() => handleDeleteClick(v)}>Delete</button>
                                     </>
@@ -95,7 +122,7 @@ function Garage() {
             )}
 
             <DeleteConfirmationModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onConfirm={handleDeleteConfirm} vehicleName={selectedVehicle ? `${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model}` : ""} />
-            <ShareVehicleModal isOpen={shareModalOpen} onClose={() => setShareModalOpen(false)} vehicle={vehicleToShare} />
+            <ShareVehicleModal isOpen={shareModalOpen} onClose={() => setShareModalOpen(false)} vehicle={vehicleToShare} onShared={(id) => setHasCollaborators((prev) => ({ ...prev, [id]: true }))} />
             <ManageCollaboratorsModal isOpen={manageModalOpen} onClose={() => setManageModalOpen(false)} vehicle={vehicleToManage} />
         </div>
     );

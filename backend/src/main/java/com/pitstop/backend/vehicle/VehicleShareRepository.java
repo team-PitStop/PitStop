@@ -18,8 +18,8 @@ public interface VehicleShareRepository extends JpaRepository<VehicleShare, Long
 
     List<VehicleShare> findByVehicleId(Long vehicleId);
 
-    void deleteByVehicleIdAndUserId(Long vehicleId, Long userId);
-    
+    Optional<VehicleShare> findByVehicleIdAndUserId(Long vehicleId, Long userId);
+
     // US-20: Helper for accept/decline logic
     Optional<VehicleShare> findByIdAndUserId(Long id, Long userId);
 }

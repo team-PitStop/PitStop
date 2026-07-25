@@ -18,6 +18,7 @@ function ActivityFeed() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState("list"); // 'list' or 'timeline'
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -42,43 +43,68 @@ function ActivityFeed() {
 
   if (loading) return <p style={{ padding: "40px" }}>Loading activity feed...</p>;
 
+  const titleCase = (s) => {
+    return s
+      .toLowerCase()
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  };
+
+  const formatActionType = (action) => {
+    if (!action) return action;
+    // If it starts with 'Logged ', title-case the remainder
+    if (action.startsWith("Logged ")) {
+      const rest = action.substring(7).replace(/_/g, " ");
+      return `Logged ${titleCase(rest)}`;
+    }
+    // fallback: title-case whole string
+    return titleCase(action.replace(/_/g, " "));
+  };
+
   return (
-    <div style={{ padding: "40px" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "24px",
-        }}
-      >
+    <div className="page-padding">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
         <h2>Activity Feed</h2>
-        <button onClick={() => navigate("/garage")}>Back to Garage</button>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button className="btn-outline" onClick={() => setViewMode(viewMode === 'list' ? 'timeline' : 'list')}>{viewMode === 'list' ? 'Timeline View' : 'List View'}</button>
+          <button className="btn-outline" onClick={() => navigate("/garage")}>Back to Garage</button>
+        </div>
       </div>
 
       {activities.length === 0 ? (
-        <p>No activity yet for this vehicle.</p>
+        <div className="card"><p>No activity yet for this vehicle.</p></div>
       ) : (
-        <div style={{ display: "grid", gap: "12px", maxWidth: "640px" }}>
-          {activities.map((activity) => (
-            <div
-              key={activity.id}
-              style={{
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                padding: "16px",
-                backgroundColor: "#fafafa",
-              }}
-            >
-              <strong style={{ fontSize: "1rem" }}>{activity.actionType}</strong>
-              <p style={{ margin: "6px 0 0", fontSize: "0.9rem", color: "#555" }}>
-                By <span style={{ fontWeight: "500" }}>{activity.performedBy}</span>
-                {" · "}
-                {activity.timestamp}
-              </p>
-            </div>
-          ))}
-        </div>
+        viewMode === 'list' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '720px' }}>
+            {activities.map((activity) => (
+              <div key={activity.id} className="card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '12px' }}>
+                  <strong style={{ fontSize: '1rem', color: 'var(--fiu-blue)' }}>{formatActionType(activity.actionType)}</strong>
+                  <span className="timeline-meta">{activity.timestamp}</span>
+                </div>
+                <p style={{ margin: '8px 0 0', color: 'var(--text-light)' }}>By <span style={{ fontWeight: 700, color: 'var(--text-dark)' }}>{activity.performedBy}</span></p>
+                {activity.details && <p style={{ marginTop: '8px', color: 'var(--text-light)' }}>{activity.details}</p>}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="timeline">
+            {activities.slice().sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp)).map((activity) => (
+              <div key={activity.id} className="timeline-item">
+                <div className="timeline-dot" aria-hidden />
+                <div className="timeline-content">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '12px' }}>
+                    <strong style={{ fontSize: '1rem', color: 'var(--fiu-blue)' }}>{formatActionType(activity.actionType)}</strong>
+                    <span className="timeline-meta">{activity.timestamp}</span>
+                  </div>
+                  <p style={{ margin: '8px 0 0', color: 'var(--text-light)' }}>By <span style={{ fontWeight: 700, color: 'var(--text-dark)' }}>{activity.performedBy}</span></p>
+                  {activity.details && <p style={{ marginTop: '8px', color: 'var(--text-light)' }}>{activity.details}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )
       )}
     </div>
   );
