@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 
 function ManageCollaboratorsModal({ isOpen, onClose, vehicle }) {
@@ -6,6 +7,7 @@ function ManageCollaboratorsModal({ isOpen, onClose, vehicle }) {
     const [loading, setLoading] = useState(false);
     const [status, setStatus] = useState(null); // { type: "success" | "error", message }
     const [removingId, setRemovingId] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!isOpen || !vehicle) return;
@@ -17,6 +19,12 @@ function ManageCollaboratorsModal({ isOpen, onClose, vehicle }) {
 
     const fetchCollaborators = () => {
         const token = localStorage.getItem("token");
+        if (!token) {
+            // Not authenticated — force login
+            setStatus({ type: 'error', message: 'Session expired. Please sign in again.' });
+            navigate('/login');
+            return;
+        }
         setLoading(true);
         setStatus(null);
 
@@ -55,8 +63,19 @@ function ManageCollaboratorsModal({ isOpen, onClose, vehicle }) {
                 setCollaborators((prev) => prev.filter((c) => c.userId !== userId));
                 setRemovingId(null);
             })
-            .catch(() => {
-                setStatus({ type: "error", message: "Could not remove access. Please try again." });
+            .catch((err) => {
+                console.error('remove collaborator error', err);
+                const statusCode = err.response?.status;
+                if (statusCode === 401) {
+                    // Authentication problem — clear token and navigate to login
+                    localStorage.removeItem('token');
+                    setStatus({ type: 'error', message: 'Session expired. Please sign in again.' });
+                    setRemovingId(null);
+                    navigate('/login');
+                    return;
+                }
+                const message = err.response?.data?.message || "Could not remove access. Please try again.";
+                setStatus({ type: "error", message });
                 setRemovingId(null);
             });
     };
@@ -92,20 +111,21 @@ function ManageCollaboratorsModal({ isOpen, onClose, vehicle }) {
                                     borderBottom: "1px solid #eee",
                                 }}
                             >
-                <span>
-                  {c.email}{" "}
-                    <span style={{ fontSize: "12px", color: "#555" }}>
-                    ({c.role === "OWNER" ? "Owner" : "Collaborator"})
-                  </span>
-                </span>
+                                <span>
+                                    {c.email}{" "}
+                                    <span style={{ fontSize: "12px", color: "#555" }}>
+                                        ({c.role === "OWNER" ? "Owner" : c.role === "PENDING" ? "Pending" : "Collaborator"})
+                                    </span>
+                                </span>
 
                                 {c.role !== "OWNER" && (
                                     <button
                                         type="button"
+                                        className={c.role === "PENDING" ? "btn-outline" : "btn-danger"}
                                         disabled={removingId === c.userId}
                                         onClick={() => handleRemove(c.userId)}
                                     >
-                                        {removingId === c.userId ? "Removing..." : "Remove"}
+                                        {removingId === c.userId ? (c.role === "PENDING" ? "Cancelling..." : "Removing...") : (c.role === "PENDING" ? "Cancel Invite" : "Remove")}
                                     </button>
                                 )}
                             </li>

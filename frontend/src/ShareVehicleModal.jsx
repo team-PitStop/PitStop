@@ -11,7 +11,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-function ShareVehicleModal({ isOpen, onClose, vehicle }) {
+function ShareVehicleModal({ isOpen, onClose, vehicle, onShared }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState(null); // { type: "success" | "error", message }
   const [submitting, setSubmitting] = useState(false);
@@ -41,6 +41,7 @@ function ShareVehicleModal({ isOpen, onClose, vehicle }) {
         setStatus({ type: "success", message: `Shared with ${email.trim()}.` });
         setEmail("");
         setSubmitting(false);
+        if (onShared && vehicle) onShared(vehicle.id);
       })
       .catch((err) => {
         const message =

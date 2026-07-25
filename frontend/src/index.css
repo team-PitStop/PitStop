@@ -24,6 +24,15 @@ body {
   color: var(--text-dark);
 }
 
+/* Page padding utility (responsive) */
+.page-padding {
+  padding: 40px;
+}
+
+@media (max-width: 640px) {
+  .page-padding { padding: 16px; }
+}
+
 /* MyFIU style Card */
 .card {
   background: var(--white);
@@ -112,10 +121,110 @@ h1, h2, h3 {
   .navbar-hamburger {
     display: block;
   }
+
+  /* Timeline adjustments for small screens */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 100%;
+    position: relative;
+    padding-left: 28px;
+  }
+  .timeline::before {
+    left: 10px;
+  }
+  .timeline-dot {
+    width: 10px;
+    height: 10px;
+    margin-left: -1px;
+    box-shadow: 0 0 0 4px rgba(182,134,44,0.05);
+  }
+  .timeline-content { padding-left: 10px; }
 }
 
 @media (min-width: 641px) {
   .navbar-hamburger {
     display: none;
   }
+
+  /* Activity timeline */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 720px;
+    position: relative;
+    padding-left: 36px;
+  }
+  .timeline-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    position: relative;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(8,30,63,0.08);
+    border-radius: 2px;
+  }
+  .timeline-dot {
+    width: 12px;
+    height: 12px;
+    background: var(--fiu-gold);
+    border-radius: 50%;
+    margin-top: 6px;
+    flex: 0 0 12px;
+    box-shadow: 0 0 0 6px rgba(182,134,44,0.06);
+    margin-left: -2px; /* sit on the vertical line */
+  }
+  .timeline-content {
+    background: transparent;
+    border-radius: var(--border-radius);
+    padding: 6px 0 6px 12px;
+    border: none;
+    width: 100%;
+  }
+  .timeline-meta {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-top: 6px;
+  }
+
+/* Modal styles used by multiple modal components */
+.modal-overlay {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+.modal-content {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  max-width: 720px;
+  width: 100%;
+  box-shadow: var(--shadow);
+}
+.modal-buttons { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+.btn-cancel { background: transparent; border: 1px solid #ccc; padding: 8px 12px; }
+.btn-delete { background: var(--error-red); color: var(--white); padding: 8px 12px; }
+
+@media (max-width: 640px) {
+  .modal-content { max-width: 100%; padding: 12px; }
+  .modal-buttons { justify-content: stretch; }
+  .modal-buttons button { flex: 1; }
+}
 }

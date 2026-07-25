@@ -128,8 +128,13 @@ public class VehicleController {
 
     @DeleteMapping("/{id}/collaborators/{userId}")
     public ResponseEntity<Void> removeCollaborator(@PathVariable Long id, @PathVariable Long userId, Authentication authentication) {
-        repo.findByIdAndUserId(id, getUserId(authentication)).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        shareRepository.deleteByVehicleIdAndUserId(id, userId);
+        Long ownerId = getUserId(authentication);
+        System.out.println("VehicleController.removeCollaborator: vehicleId=" + id + ", userId=" + userId + ", ownerId=" + ownerId);
+        repo.findByIdAndUserId(id, ownerId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        VehicleShare share = shareRepository.findByVehicleIdAndUserId(id, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Collaborator not found"));
+        shareRepository.delete(share);
+        System.out.println("VehicleController.removeCollaborator: deleted share id=" + share.getId());
         return ResponseEntity.noContent().build();
     }
 
