@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from "./api";
 import { useNavigate } from 'react-router-dom';
 import PendingInvites from './PendingInvites';
 
@@ -16,7 +16,7 @@ function Dashboard() {
             return;
         }
 
-        axios.get('http://localhost:8080/api/auth/me', {
+        axios.get('/api/auth/me', {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => setEmail(response.data.email))
@@ -25,7 +25,7 @@ function Dashboard() {
             navigate('/login');
         });
 
-        axios.get('http://localhost:8080/api/alerts/overdue', {
+        axios.get('/api/alerts/overdue', {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => {

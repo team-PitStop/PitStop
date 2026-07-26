@@ -8,7 +8,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "./api";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 
 // US-9: Full Catalog of Common Services
@@ -53,7 +53,7 @@ function ServiceLog() {
 
     // Fetch all vehicles to determine if this user is the owner
     axios
-        .get("http://localhost:8080/api/vehicles/grid", {
+        .get("/api/vehicles/grid", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
@@ -68,7 +68,7 @@ function ServiceLog() {
 
     // Fetch service entries
     axios
-        .get(`http://localhost:8080/api/vehicles/${id}/service-entries`, {
+        .get(`/api/vehicles/${id}/service-entries`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
@@ -108,7 +108,7 @@ function ServiceLog() {
     const token = localStorage.getItem("token");
     axios
         .post(
-            `http://localhost:8080/api/vehicles/${id}/service-entries`,
+            `/api/vehicles/${id}/service-entries`,
             {
               serviceType: finalServiceType,
               serviceDate: form.serviceDate,
@@ -152,7 +152,7 @@ function ServiceLog() {
     const token = localStorage.getItem("token");
     axios
         .delete(
-            `http://localhost:8080/api/vehicles/${id}/service-entries/${entryToDelete.id}`,
+            `/api/vehicles/${id}/service-entries/${entryToDelete.id}`,
             { headers: { Authorization: `Bearer ${token}` } }
         )
         .then(() => {

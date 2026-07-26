@@ -11,7 +11,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "./api";
 
 function ActivityFeed() {
   const { id } = useParams();
@@ -28,7 +28,7 @@ function ActivityFeed() {
     }
 
     axios
-      .get(`http://localhost:8080/api/vehicles/${id}/activity`, {
+      .get(`/api/vehicles/${id}/activity`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {

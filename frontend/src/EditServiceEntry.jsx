@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "./api";
 
 const serviceTypes = [
   { value: "OIL_CHANGE", label: "Oil Change" },
@@ -42,7 +42,7 @@ function EditServiceEntry() {
 
     // Check if the current user is the vehicle owner
     axios
-        .get("http://localhost:8080/api/vehicles/grid", {
+        .get("/api/vehicles/grid", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
@@ -58,7 +58,7 @@ function EditServiceEntry() {
     // Fetch the service entry
     axios
       .get(
-        `http://localhost:8080/api/vehicles/${vehicleId}/service-entries/${id}`,
+        `/api/vehicles/${vehicleId}/service-entries/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       )
       .then((response) => {
@@ -125,7 +125,7 @@ function EditServiceEntry() {
 
     axios
       .put(
-        `http://localhost:8080/api/vehicles/${vehicleId}/service-entries/${id}`,
+        `/api/vehicles/${vehicleId}/service-entries/${id}`,
         {
           serviceType: finalServiceType,
           serviceDate: entry.serviceDate,

@@ -9,7 +9,7 @@
 //   - vehicle: the vehicle being shared (used for id + display name)
 
 import { useState } from "react";
-import axios from "axios";
+import axios from "./api";
 
 function ShareVehicleModal({ isOpen, onClose, vehicle, onShared }) {
   const [email, setEmail] = useState("");
@@ -33,7 +33,7 @@ function ShareVehicleModal({ isOpen, onClose, vehicle, onShared }) {
 
     axios
       .post(
-        `http://localhost:8080/api/vehicles/${vehicle.id}/share`,
+        `/api/vehicles/${vehicle.id}/share`,
         { email: email.trim() },
         { headers: { Authorization: `Bearer ${token}` } }
       )
