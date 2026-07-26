@@ -84,16 +84,23 @@ function ManageCollaboratorsModal({ isOpen, onClose, vehicle }) {
 
     return (
         <div className="modal-overlay" onClick={close}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content" style={{ maxWidth: "520px" }} onClick={(e) => e.stopPropagation()}>
                 <h3>Manage Access</h3>
-                <p>
-                    People with access to <strong>{vehicleName}</strong>.
+                <p style={{ color: "var(--text-light)" }}>
+                    People with access to <strong style={{ color: "var(--text-dark)" }}>{vehicleName}</strong>.
                 </p>
 
-                {loading && <p>Loading...</p>}
+                {loading && <p style={{ color: "var(--text-light)" }}>Loading collaborators...</p>}
 
                 {status && (
-                    <p style={{ color: status.type === "success" ? "green" : "crimson", marginTop: "8px" }}>
+                    <p style={{
+                        color: status.type === "success" ? "#2e7d32" : "var(--error-red)",
+                        backgroundColor: status.type === "success" ? "#f1f8f2" : "#fff5f5",
+                        border: `1px solid ${status.type === "success" ? "#2e7d32" : "var(--error-red)"}`,
+                        borderRadius: "var(--border-radius)",
+                        padding: "12px",
+                        margin: "0 0 8px"
+                    }}>
                         {status.message}
                     </p>
                 )}
@@ -107,13 +114,15 @@ function ManageCollaboratorsModal({ isOpen, onClose, vehicle }) {
                                     display: "flex",
                                     justifyContent: "space-between",
                                     alignItems: "center",
-                                    padding: "8px 0",
+                                    gap: "12px",
+                                    flexWrap: "wrap",
+                                    padding: "12px 0",
                                     borderBottom: "1px solid #eee",
                                 }}
                             >
                                 <span>
                                     {c.email}{" "}
-                                    <span style={{ fontSize: "12px", color: "#555" }}>
+                                    <span style={{ fontSize: "12px", color: "var(--text-light)" }}>
                                         ({c.role === "OWNER" ? "Owner" : c.role === "PENDING" ? "Pending" : "Collaborator"})
                                     </span>
                                 </span>
@@ -122,6 +131,7 @@ function ManageCollaboratorsModal({ isOpen, onClose, vehicle }) {
                                     <button
                                         type="button"
                                         className={c.role === "PENDING" ? "btn-outline" : "btn-danger"}
+                                        style={{ padding: "5px 10px", fontSize: "12px" }}
                                         disabled={removingId === c.userId}
                                         onClick={() => handleRemove(c.userId)}
                                     >
@@ -134,7 +144,7 @@ function ManageCollaboratorsModal({ isOpen, onClose, vehicle }) {
                 )}
 
                 <div className="modal-buttons" style={{ marginTop: "12px" }}>
-                    <button type="button" className="btn-cancel" onClick={close}>
+                    <button type="button" className="btn-outline" onClick={close}>
                         Close
                     </button>
                 </div>
