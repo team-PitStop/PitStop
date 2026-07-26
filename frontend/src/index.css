@@ -232,9 +232,10 @@ h1, h2, h3 {
 /* ============================================================
    Auth pages (Login / Register)
 
-   A full-bleed dark FIU gradient sits behind the auth card. Scoped
-   entirely to .auth-page, so every other page keeps the light MyFIU
-   background. Pure CSS — no images or external assets.
+   A night highway drawn entirely in CSS: dark sky, a hazy horizon,
+   and an asphalt road receding to a vanishing point. Scoped to
+   .auth-page so every other page keeps the light MyFIU background.
+   No images or external assets.
    ============================================================ */
 
 .auth-page {
@@ -243,60 +244,80 @@ h1, h2, h3 {
   margin: 0 auto;
 }
 
-/* Layer 1 — the gradient itself. Fixed so it covers the viewport
-   regardless of how tall the card is, and z-index:-1 keeps it behind
-   all page content while still painting over the body's grey. */
+/* Sky, horizon haze, and vignette. Fixed so the scene covers the
+   viewport regardless of how tall the card is; z-index:-1 keeps it
+   behind page content while still painting over the body's grey. */
 .auth-page::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(ellipse 80% 60% at 85% 0%, rgba(182, 134, 44, 0.18), transparent 60%),
-    radial-gradient(ellipse 70% 60% at 0% 100%, rgba(21, 49, 94, 0.55), transparent 65%),
-    linear-gradient(135deg, #0d2549 0%, var(--fiu-blue) 45%, #0a1526 100%);
+    /* vignette, to pull focus toward the card */
+    radial-gradient(ellipse 85% 70% at 50% 45%, transparent 36%, rgba(0, 0, 0, 0.62) 100%),
+    /* cool glow sitting on the horizon, where the road fades out */
+    radial-gradient(ellipse 52% 13% at 50% 58%, rgba(132, 170, 228, 0.26), transparent 72%),
+    /* warm tail-light hint, offset so the scene isn't symmetrical */
+    radial-gradient(ellipse 17% 6% at 62% 58%, rgba(182, 134, 44, 0.22), transparent 70%),
+    /* night sky easing down toward the horizon */
+    linear-gradient(to bottom, #04060a 0%, #070d15 34%, #0a1420 52%, #0c1822 58%, #0a1017 100%);
 }
 
-/* Layer 2 — carbon-fibre weave. Two fine diagonal grids at low opacity
-   give the surface a woven texture up close and read as flat colour at
-   a glance, so it never competes with the card. */
+/* The road. A flat plane laid down in 3D: rotating it back around X
+   under perspective foreshortens the repeating lane markings, so they
+   converge on a vanishing point at the horizon.
+
+   The horizon can never sit higher than perspective x cot(angle), so
+   the perspective is given in vh — that keeps the vanishing point at a
+   fixed fraction of the screen (here ~52vh up, i.e. just under half)
+   on any viewport, instead of collapsing to a sliver on tall screens.
+   The plane is far longer than the viewport so the road approaches
+   that limit, and wider than it so the near edge fills the bottom
+   corners. The mask fades the far end out rather than letting it cut a
+   hard line across the haze. */
 .auth-page::after {
   content: '';
   position: fixed;
-  inset: 0;
+  left: -60%;
+  right: -60%;
+  bottom: 0;
+  height: 190vh;
   z-index: -1;
-  opacity: 0.55;
+  transform: perspective(90vh) rotateX(60deg);
+  transform-origin: 50% 100%;
   background-image:
-    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 6px),
-    repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.10) 0 1px, transparent 1px 6px);
+    /* dashed centre line — long, widely spaced dashes, so perspective
+       stretches the near ones and thins them toward the horizon */
+    repeating-linear-gradient(to top, rgba(255, 255, 255, 0.88) 0 18vh, transparent 18vh 27vh),
+    /* solid edge lines, left then right */
+    linear-gradient(rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.32)),
+    linear-gradient(rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.32)),
+    /* asphalt, lighter toward the horizon so the road reads as lit */
+    linear-gradient(to top, #12181e 0%, #161d24 60%, #1f2830 100%);
+  background-size: 3.4vh 100%, 1.2vh 100%, 1.2vh 100%, 100% 100%;
+  background-position: 50% 100%, 34% 100%, 66% 100%, 0 0;
+  background-repeat: no-repeat;
+  -webkit-mask-image: linear-gradient(to top, #000 70%, transparent 99%);
+  mask-image: linear-gradient(to top, #000 70%, transparent 99%);
 }
 
-/* Lift the card off the dark backdrop. */
+/* Lift the card off the road. */
 .auth-page .card {
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.38), 0 2px 8px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
 /* The "Don't have an account?" line sits outside the card, on the dark
    background, so it needs light text and a gold link. */
 .auth-footnote {
   text-align: center;
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.82);
+  /* the line can fall over a bright lane marking, so keep it readable */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
 }
 
 .auth-footnote a {
   color: var(--fiu-gold-light);
   font-weight: 600;
-}
-
-/* Layout's footer is shared by every page and sets a white background
-   inline, which would cut a bright band across the dark auth screen.
-   Blend it only while an auth page is mounted; !important is required
-   to beat the inline style. Browsers without :has() simply keep the
-   white footer — a cosmetic fallback, not a broken layout. */
-body:has(.auth-page) footer {
-  background-color: transparent !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.10) !important;
-  color: rgba(255, 255, 255, 0.55) !important;
 }
 
 /* Centre the card in the viewport rather than letting it sit at the top
