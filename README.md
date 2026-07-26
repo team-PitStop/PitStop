@@ -1,19 +1,112 @@
 # Pit Stop
 
-A collaborative car maintenance tracker that helps users and their team log service history, schedule upcoming maintenance, and share vehicles with family or roommates.
+**Pit Stop is live — just open it in your browser:**
+
+### 👉 https://pitstop-8463842bfa02.herokuapp.com
+
+No install, no setup, nothing to download. Register a free account, or try the demo login
+(`demo@pitstop.app` / `pitstop123`). Everything below is for people who want to *develop*
+Pit Stop; if you just want to *use* it, the link above is all you need.
 
 ---
 
-## About
+## What it is
 
-Most people have no idea when their oil was last changed or when their next service is due — and when multiple people share a car, it's even worse. Pit Stop keeps the whole household on the same page across every vehicle they own.
+A collaborative car maintenance tracker that keeps a whole household on the same page across every vehicle they own.
 
-**Key features:**
-- Manage multiple vehicles in one garage
-- Log service history with date, mileage, cost, and notes
-- Schedule upcoming maintenance with smart interval suggestions
-- Get reminded about overdue or upcoming service
-- Share vehicles with family or roommates and see everyone's activity
+- **One garage for all your vehicles** — make, model, year, mileage, nickname
+- **Full service history** — log every oil change and repair with date, mileage, cost, and notes
+- **Upcoming maintenance** — schedule what's due next, with smart interval suggestions
+- **Overdue alerts** — the dashboard flags anything past its due date or mileage
+- **Share a vehicle** — invite family or roommates by email; they accept the invite and can log service too
+- **Activity feed** — see who did what on a shared vehicle
+
+Every account's data is private: collaborators only see vehicles explicitly shared with them, and only the owner can edit or delete a vehicle.
+
+## Using it
+
+1. **Register** at the link above (or use the demo login), then log in.
+2. **Add a vehicle** from My Garage.
+3. **Log services** as you do them — the vehicle's mileage stays current automatically.
+4. **Schedule upcoming maintenance** and watch the dashboard for overdue alerts.
+5. **Share** a vehicle by email from its garage card; the recipient accepts the invite from their dashboard.
+
+---
+
+## Local development
+
+React (Vite) dev server and Spring Boot run separately in dev; in production one Spring Boot jar serves both the API and the built frontend. Locally you run your own PostgreSQL — production uses a cloud database via env vars, and Flyway builds/migrates the schema automatically on startup in both.
+
+**Prerequisites:** Java 21+, Node 18+, PostgreSQL running locally.
+
+```bash
+psql -c "CREATE DATABASE pitstop;"   # one-time; see docs/database-setup.md for details
+```
+
+**Run the backend:**
+
+```bash
+cd backend
+./mvnw spring-boot:run               # API on http://localhost:8080
+```
+
+DB credentials default to your OS username with no password; override with
+`DB_USER=... DB_PASSWORD=... ./mvnw spring-boot:run`.
+
+**Run the frontend:**
+
+```bash
+cd frontend
+npm install
+npm start                            # app on http://localhost:5173
+```
+
+**Tests:**
+
+```bash
+cd backend && ./mvnw test            # boots the app against your local DB
+```
+
+**Production-style build** (packages the React app inside the jar, exactly what Heroku runs):
+
+```bash
+backend/mvnw -f pom.xml -Pheroku -DskipTests clean package
+java -jar backend/target/backend-0.0.1-SNAPSHOT.jar
+```
+
+## Configuration (production env vars)
+
+| Var | Required | Notes |
+|---|---|---|
+| `SPRING_DATASOURCE_URL` | ✅ | JDBC URL of the cloud Postgres (Neon), incl. `sslmode=require&prepareThreshold=0` |
+| `SPRING_DATASOURCE_USERNAME` | ✅ | Database user |
+| `SPRING_DATASOURCE_PASSWORD` | ✅ | Database password |
+| `JWT_SECRET` | ✅ | Signs login tokens; local dev falls back to a throwaway default |
+| `MAVEN_CUSTOM_OPTS` | ✅ | `-Pheroku -DskipTests` — turns on the frontend-embedding build profile |
+
+## Deployment & CI/CD
+
+A merge into `main` **deploys to production automatically** — Heroku's GitHub integration watches `main` and rebuilds the app on every merge.
+
+| Environment | App | URL |
+|---|---|---|
+| Production | `pitstop` (Heroku, eco dyno) | https://pitstop-8463842bfa02.herokuapp.com |
+
+- `main` is protected: no direct pushes — work on a branch, open a PR, one approving review (not the author) merges it.
+- Merging to `main` is deploying: the Heroku build runs the `heroku` Maven profile (builds the React app, packages it into the jar) and Flyway applies any new migrations on boot.
+- Database is a free [Neon](https://neon.tech) Postgres; credentials and the JWT secret live only in Heroku config vars — no secrets in the repo.
+
+```bash
+git checkout main && git pull origin main
+git checkout -b yourname/short-task-name
+# ...work, commit...
+git push -u origin yourname/short-task-name
+# open a PR on GitHub → teammate approves → merge = deploy
+```
+
+## Architecture
+
+A Spring Boot 3 (Java 21) REST API under `backend/` — stateless JWT auth (Spring Security + jjwt, BCrypt), JPA entities per feature package (`vehicle`, `maintenance`, `upcoming`, `activity`), and Flyway-owned schema (`ddl-auto=validate`). The React 19 + Vite frontend under `frontend/` talks to it through a single shared axios instance (`src/api.js`) — absolute URL in dev, same-origin in production. See **[docs/](docs/)** for database setup.
 
 ---
 
@@ -21,8 +114,6 @@ Most people have no idea when their oil was last changed or when their next serv
 
 **CIS 3950: Capstone 1** — Florida International University, Summer 2026
 **Instructor:** Professor Masoud Sadjadi
-
----
 
 ## Team
 
@@ -34,18 +125,6 @@ Most people have no idea when their oil was last changed or when their next serv
 | Dylan | Developer |
 | Miguel | Developer |
 
----
-
-## Tech Stack
-
-- **Frontend:** React 19 + Vite, React Router v7, Axios
-- **Backend:** Java 21, Spring Boot 3, Spring Security (stateless JWT)
-- **Database:** PostgreSQL 17, Flyway migrations
-- **Auth:** JWT (jjwt 0.12), BCrypt password hashing
-- **Hosting:** TBD
-
----
-
 ## Sprint Roadmap
 
 | Sprint | Dates | Theme |
@@ -56,97 +135,11 @@ Most people have no idea when their oil was last changed or when their next serv
 | 4 | Jun 29 – Jul 12 | Collaboration — share vehicles with others |
 | 5 | Jul 13 – Jul 26 | Design and Deploy — dashboard, notifications, showcase prep |
 
----
-
-## Getting Started
-
-### Prerequisites
-
-- Java 21+
-- Maven 3.9+
-- Node.js 18+ and npm
-- PostgreSQL 17 running locally
-
-### Database setup
-
-```bash
-psql -c "CREATE DATABASE pitstop;"
-```
-
-See `docs/database-setup.md` for full setup instructions (user permissions, teammates' environments).
-
-### Backend
-
-```bash
-cd backend
-./mvnw spring-boot:run
-```
-
-The API starts on `http://localhost:8080`. Flyway runs migrations automatically on startup.
-
-To override the default DB credentials or JWT secret:
-
-```bash
-DB_USER=myuser DB_PASSWORD=mypass JWT_SECRET=my-secret ./mvnw spring-boot:run
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm start
-```
-
-The app opens at `http://localhost:5173`. (VITE's built in default port)
-
-### Running the full app
-
-Start the backend first, then the frontend. Register an account at `/register`, then log in at `/login`.
-
----
-
-## Team Workflow
-
-`main` is protected — **no one pushes to it directly**. All work happens on a
-branch and merges into `main` through a Pull Request with one approval.
-
-```bash
-# 1. Start from the latest main
-git checkout main
-git pull origin main
-
-# 2. Create a branch for your task
-git checkout -b yourname/short-task-name
-
-# 3. Work, then commit and push the branch
-git add .
-git commit -m "Describe what you did"
-git push -u origin yourname/short-task-name
-
-# 4. Open a Pull Request on GitHub.
-#    A teammate reviews and approves it, then it merges into main.
-
-# 5. If main moved while you worked, refresh your branch before merging:
-git checkout main && git pull origin main
-git checkout yourname/short-task-name
-git merge main
-```
-
-**Rules**
-- One approving review (from someone other than the author) is required to merge.
-- Never force-push or delete `main`.
-- Always `git pull origin main` before starting something new.
-
----
-
 ## Project Management
 
 - **User stories & backlog:** Mingle
 - **Sprint ceremonies:** Sprint Planning, Daily Scrum, Backlog Grooming, Sprint Review, Sprint Retrospective
 - **Sprint length:** 2 weeks
-
----
 
 ## Final Deliverables
 
