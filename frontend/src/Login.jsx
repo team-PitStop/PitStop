@@ -23,15 +23,44 @@ function Login() {
     };
 
     return (
-        <div style={{ padding: '40px' }}>
-            <h1>PitStop Login</h1>
-            <form onSubmit={handleSubmit}>
-                <input type="email" placeholder="Email" onChange={(e) => setEmail(e.target.value)} required /><br /><br />
-                <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} required /><br /><br />
-                <button type="submit">Log In</button>
-            </form>
-            <p>{message}</p>
-            <p>Don't have an account? <a href="/register">Sign up</a></p>
+        <div style={{ maxWidth: '420px', margin: '0 auto' }}>
+            <div className="card">
+                <h1 style={{ fontSize: '28px', marginBottom: '4px' }}>PitStop Login</h1>
+                <p style={{ color: 'var(--text-light)', marginTop: 0, marginBottom: '24px' }}>
+                    Sign in to track your vehicle maintenance.
+                </p>
+
+                {message && (
+                    <p style={{
+                        color: 'var(--error-red)',
+                        backgroundColor: '#fff5f5',
+                        border: '1px solid var(--error-red)',
+                        borderRadius: 'var(--border-radius)',
+                        padding: '12px',
+                        margin: '0 0 16px'
+                    }}>
+                        {message}
+                    </p>
+                )}
+
+                <form onSubmit={handleSubmit}>
+                    <label style={{ display: 'block', fontWeight: 600, color: 'var(--fiu-blue)' }}>
+                        Email
+                        <input type="email" placeholder="you@example.com" onChange={(e) => setEmail(e.target.value)} required />
+                    </label>
+
+                    <label style={{ display: 'block', fontWeight: 600, color: 'var(--fiu-blue)' }}>
+                        Password
+                        <input type="password" placeholder="Your password" onChange={(e) => setPassword(e.target.value)} required />
+                    </label>
+
+                    <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '8px' }}>Log In</button>
+                </form>
+            </div>
+
+            <p style={{ textAlign: 'center', color: 'var(--text-light)' }}>
+                Don't have an account? <a href="/register" style={{ color: 'var(--fiu-blue)', fontWeight: 600 }}>Sign up</a>
+            </p>
         </div>
     );
 }
