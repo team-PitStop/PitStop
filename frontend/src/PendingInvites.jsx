@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import axios from "./api";
 
 function PendingInvites() {
     const [invites, setInvites] = useState([]);
@@ -10,7 +10,7 @@ function PendingInvites() {
 
     const fetchInvites = () => {
         setStatus(null);
-        axios.get('http://localhost:8080/api/vehicles/invitations/pending', {
+        axios.get('/api/vehicles/invitations/pending', {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(res => {
@@ -37,12 +37,12 @@ function PendingInvites() {
     const handleAction = async (inviteId, action) => {
         try {
             if (action === 'accept') {
-                await axios.post(`http://localhost:8080/api/vehicles/invitations/${inviteId}/accept`, {}, {
+                await axios.post(`/api/vehicles/invitations/${inviteId}/accept`, {}, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setStatus({ type: 'success', message: 'Invitation accepted! Vehicle added to garage.' });
             } else {
-                await axios.delete(`http://localhost:8080/api/vehicles/invitations/${inviteId}/decline`, {
+                await axios.delete(`/api/vehicles/invitations/${inviteId}/decline`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setStatus({ type: 'success', message: 'Invitation declined.' });

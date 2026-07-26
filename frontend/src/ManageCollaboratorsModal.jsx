@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
-import axios from "axios";
+import axios from "./api";
 
 function ManageCollaboratorsModal({ isOpen, onClose, vehicle }) {
     const [collaborators, setCollaborators] = useState([]);
@@ -29,7 +29,7 @@ function ManageCollaboratorsModal({ isOpen, onClose, vehicle }) {
         setStatus(null);
 
         axios
-            .get(`http://localhost:8080/api/vehicles/${vehicle.id}/collaborators`, {
+            .get(`/api/vehicles/${vehicle.id}/collaborators`, {
                 headers: { Authorization: `Bearer ${token}` },
             })
             .then((response) => {
@@ -56,7 +56,7 @@ function ManageCollaboratorsModal({ isOpen, onClose, vehicle }) {
 
         axios
             .delete(
-                `http://localhost:8080/api/vehicles/${vehicle.id}/collaborators/${userId}`,
+                `/api/vehicles/${vehicle.id}/collaborators/${userId}`,
                 { headers: { Authorization: `Bearer ${token}` } }
             )
             .then(() => {

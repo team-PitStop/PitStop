@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "./api";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 import ShareVehicleModal from "./ShareVehicleModal";
 import ManageCollaboratorsModal from "./ManageCollaboratorsModal";
@@ -25,7 +25,7 @@ function Garage() {
         }
 
         axios
-            .get("http://localhost:8080/api/vehicles/grid", {
+            .get("/api/vehicles/grid", {
                 headers: { Authorization: `Bearer ${token}` },
             })
             .then(async (response) => {
@@ -40,7 +40,7 @@ function Garage() {
                 await Promise.all(
                     owned.map(async (veh) => {
                         try {
-                            const res = await axios.get(`http://localhost:8080/api/vehicles/${veh.id}/collaborators`, {
+                            const res = await axios.get(`/api/vehicles/${veh.id}/collaborators`, {
                                 headers: { Authorization: `Bearer ${token}` },
                             });
                             // collaborators list always includes the owner; >1 means someone else was invited/added
@@ -68,7 +68,7 @@ function Garage() {
     const handleDeleteConfirm = () => {
         const token = localStorage.getItem("token");
         axios
-            .delete(`http://localhost:8080/api/vehicles/${selectedVehicle.id}`, {
+            .delete(`/api/vehicles/${selectedVehicle.id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             })
             .then(() => {

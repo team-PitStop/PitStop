@@ -109,4 +109,82 @@
 		</plugins>
 	</build>
 
+	<profiles>
+		<!-- US-25: "heroku" profile - builds the React frontend and packages it
+		     INSIDE this jar so one Heroku dyno serves both the API and the UI.
+		     Off by default so normal local backend builds stay fast; Heroku turns
+		     it on via the MAVEN_CUSTOM_OPTS=-Pheroku config var. To test locally:
+		     ./mvnw -Pheroku -DskipTests package -->
+		<profile>
+			<id>heroku</id>
+			<build>
+				<plugins>
+					<!-- Downloads its own Node, then runs npm ci + npm run build
+					     in ../frontend (Vite outputs to frontend/dist). -->
+					<plugin>
+						<groupId>com.github.eirslett</groupId>
+						<artifactId>frontend-maven-plugin</artifactId>
+						<version>1.15.1</version>
+						<configuration>
+							<workingDirectory>../frontend</workingDirectory>
+							<installDirectory>target</installDirectory>
+						</configuration>
+						<executions>
+							<execution>
+								<id>install-node-and-npm</id>
+								<goals>
+									<goal>install-node-and-npm</goal>
+								</goals>
+								<configuration>
+									<nodeVersion>v22.13.0</nodeVersion>
+								</configuration>
+							</execution>
+							<execution>
+								<id>npm-ci</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<configuration>
+									<arguments>ci</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>npm-build</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<configuration>
+									<arguments>run build</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<!-- Copies frontend/dist into the jar's static/ folder, which
+					     Spring Boot serves at the root URL automatically. -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-resources-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>copy-frontend-build</id>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>copy-resources</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
+									<resources>
+										<resource>
+											<directory>../frontend/dist</directory>
+										</resource>
+									</resources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 </project>

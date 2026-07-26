@@ -44,8 +44,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                 // Preflight requests must be allowed before auth is required.
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // Everything else (e.g. /api/auth/me, /api/vehicles) needs a valid token.
-                .anyRequest().authenticated()
+                // Every API endpoint (e.g. /api/auth/me, /api/vehicles) needs a valid token.
+                .requestMatchers("/api/**").authenticated()
+                // US-25: everything that isn't /api is the React app itself --
+                // index.html, /assets/*.js, etc. Those must load before the user
+                // can even reach the login form, so they're public. The data is
+                // still protected: it all lives behind /api/**.
+                .anyRequest().permitAll()
             )
             // Missing/invalid token -> 401 Unauthorized (Spring's default here is 403).
             // Write the response directly instead of sendError() so the request isn't

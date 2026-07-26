@@ -8,7 +8,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "./api";
 
 function EditVehicleForm() {
   // useParams grabs the vehicle ID from the URL (e.g., /vehicles/3/edit -> id = "3")
@@ -37,7 +37,7 @@ function EditVehicleForm() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     axios
-      .get(`http://localhost:8080/api/vehicles/${id}`, {
+      .get(`/api/vehicles/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
@@ -82,7 +82,7 @@ function EditVehicleForm() {
 
     const token = localStorage.getItem("token");
     axios
-      .put(`http://localhost:8080/api/vehicles/${id}`, vehicle, {
+      .put(`/api/vehicles/${id}`, vehicle, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then(() => {

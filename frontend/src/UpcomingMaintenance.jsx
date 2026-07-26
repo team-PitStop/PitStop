@@ -14,7 +14,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "./api";
 
 const serviceTypes = [
   { value: "OIL_CHANGE", label: "Oil Change" },
@@ -80,7 +80,7 @@ function UpcomingMaintenance() {
   const loadUpcoming = () => {
     const token = localStorage.getItem("token");
     axios
-      .get(`http://localhost:8080/api/vehicles/${id}/upcoming-maintenance`, {
+      .get(`/api/vehicles/${id}/upcoming-maintenance`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
@@ -102,7 +102,7 @@ function UpcomingMaintenance() {
 
     // Fetch all vehicles to determine if this user is the owner
     axios
-      .get("http://localhost:8080/api/vehicles/grid", {
+      .get("/api/vehicles/grid", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {
@@ -163,7 +163,7 @@ function UpcomingMaintenance() {
     }
     axios
       .post(
-        `http://localhost:8080/api/vehicles/${id}/upcoming-maintenance`,
+        `/api/vehicles/${id}/upcoming-maintenance`,
         {
           serviceType: form.serviceType,
           dueDate: form.dueDate || null,
@@ -214,7 +214,7 @@ function UpcomingMaintenance() {
     }
     axios
       .post(
-        `http://localhost:8080/api/vehicles/${id}/upcoming-maintenance/${itemId}/complete`,
+        `/api/vehicles/${id}/upcoming-maintenance/${itemId}/complete`,
         {
           actualDate: completeForm.actualDate,
           actualMileage: parseInt(completeForm.actualMileage, 10),

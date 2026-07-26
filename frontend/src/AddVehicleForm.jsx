@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "./api";
 
 function AddVehicleForm() {
     const [vehicle, setVehicle] = useState({
@@ -35,7 +35,7 @@ function AddVehicleForm() {
 
         const token = localStorage.getItem("token");
         axios
-            .post("http://localhost:8080/api/vehicles", {
+            .post("/api/vehicles", {
                 ...vehicle,
                 year: parseInt(vehicle.year),
                 mileage: parseInt(vehicle.mileage),

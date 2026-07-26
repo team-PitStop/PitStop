@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- US-25: Root pom so Heroku can build this repo.
+     Heroku's Java buildpack looks for a pom.xml at the repo root; this one
+     just says "the real project lives in backend/". Developers keep working
+     inside backend/ exactly as before - nothing changes locally. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.pitstop</groupId>
+	<artifactId>pitstop</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<name>pitstop</name>
+
+	<modules>
+		<module>backend</module>
+	</modules>
+</project>
