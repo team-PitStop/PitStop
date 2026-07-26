@@ -228,3 +228,83 @@ h1, h2, h3 {
   .modal-buttons { justify-content: stretch; }
   .modal-buttons button { flex: 1; }
 }
+
+/* ============================================================
+   Auth pages (Login / Register)
+
+   A full-bleed dark FIU gradient sits behind the auth card. Scoped
+   entirely to .auth-page, so every other page keeps the light MyFIU
+   background. Pure CSS — no images or external assets.
+   ============================================================ */
+
+.auth-page {
+  position: relative;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* Layer 1 — the gradient itself. Fixed so it covers the viewport
+   regardless of how tall the card is, and z-index:-1 keeps it behind
+   all page content while still painting over the body's grey. */
+.auth-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 80% 60% at 85% 0%, rgba(182, 134, 44, 0.18), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 0% 100%, rgba(21, 49, 94, 0.55), transparent 65%),
+    linear-gradient(135deg, #0d2549 0%, var(--fiu-blue) 45%, #0a1526 100%);
+}
+
+/* Layer 2 — carbon-fibre weave. Two fine diagonal grids at low opacity
+   give the surface a woven texture up close and read as flat colour at
+   a glance, so it never competes with the card. */
+.auth-page::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.55;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 6px),
+    repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.10) 0 1px, transparent 1px 6px);
+}
+
+/* Lift the card off the dark backdrop. */
+.auth-page .card {
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.38), 0 2px 8px rgba(0, 0, 0, 0.22);
+}
+
+/* The "Don't have an account?" line sits outside the card, on the dark
+   background, so it needs light text and a gold link. */
+.auth-footnote {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.auth-footnote a {
+  color: var(--fiu-gold-light);
+  font-weight: 600;
+}
+
+/* Layout's footer is shared by every page and sets a white background
+   inline, which would cut a bright band across the dark auth screen.
+   Blend it only while an auth page is mounted; !important is required
+   to beat the inline style. Browsers without :has() simply keep the
+   white footer — a cosmetic fallback, not a broken layout. */
+body:has(.auth-page) footer {
+  background-color: transparent !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.10) !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+}
+
+/* Centre the card in the viewport rather than letting it sit at the top
+   with dead space beneath. `safe` keeps the top of the card reachable if
+   the screen is shorter than the form; browsers that don't support it
+   drop the declaration and fall back to top-aligned. */
+body:has(.auth-page) main {
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+}

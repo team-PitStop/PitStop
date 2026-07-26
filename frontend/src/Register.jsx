@@ -25,7 +25,7 @@ function Register() {
     };
 
     return (
-        <div style={{ maxWidth: '420px', margin: '0 auto' }}>
+        <div className="auth-page">
             <div className="card">
                 <h1 style={{ fontSize: '28px', marginBottom: '4px' }}>PitStop Sign Up</h1>
                 <p style={{ color: 'var(--text-light)', marginTop: 0, marginBottom: '24px' }}>
@@ -60,8 +60,8 @@ function Register() {
                 </form>
             </div>
 
-            <p style={{ textAlign: 'center', color: 'var(--text-light)' }}>
-                Already have an account? <a href="/login" style={{ color: 'var(--fiu-blue)', fontWeight: 600 }}>Log in</a>
+            <p className="auth-footnote">
+                Already have an account? <a href="/login">Log in</a>
             </p>
         </div>
     );
