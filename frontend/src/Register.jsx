@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from "./api";
 import { useNavigate } from 'react-router-dom';
+import AuthScene from './AuthScene';
 
 function Register() {
     const [email, setEmail] = useState('');
@@ -26,6 +27,7 @@ function Register() {
 
     return (
         <div className="auth-page">
+            <AuthScene />
             <div className="card">
                 <h1 style={{ fontSize: '28px', marginBottom: '4px' }}>PitStop Sign Up</h1>
                 <p style={{ color: 'var(--text-light)', marginTop: 0, marginBottom: '24px' }}>
