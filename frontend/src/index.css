@@ -195,6 +195,7 @@ h1, h2, h3 {
     font-size: 0.9rem;
     margin-top: 6px;
   }
+}
 
 /* Modal styles used by multiple modal components */
 .modal-overlay {
@@ -226,5 +227,4 @@ h1, h2, h3 {
   .modal-content { max-width: 100%; padding: 12px; }
   .modal-buttons { justify-content: stretch; }
   .modal-buttons button { flex: 1; }
-}
 }
