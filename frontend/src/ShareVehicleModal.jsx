@@ -56,34 +56,44 @@ function ShareVehicleModal({ isOpen, onClose, vehicle, onShared }) {
 
   return (
     <div className="modal-overlay" onClick={close}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content" style={{ maxWidth: "480px" }} onClick={(e) => e.stopPropagation()}>
         <h3>Share Vehicle</h3>
-        <p>
+        <p style={{ color: "var(--text-light)" }}>
           Invite someone to help track maintenance on{" "}
-          <strong>{vehicleName}</strong>. They'll see it in their garage.
+          <strong style={{ color: "var(--text-dark)" }}>{vehicleName}</strong>.
+          They'll see it in their garage.
         </p>
 
         <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            required
-            placeholder="their email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{ width: "100%", padding: "8px", boxSizing: "border-box" }}
-          />
+          <label style={{ display: "block", fontWeight: 600, color: "var(--fiu-blue)" }}>
+            Email address
+            <input
+              type="email"
+              required
+              placeholder="their email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
 
           {status && (
-            <p style={{ color: status.type === "success" ? "green" : "crimson", marginTop: "8px" }}>
+            <p style={{
+              color: status.type === "success" ? "#2e7d32" : "var(--error-red)",
+              backgroundColor: status.type === "success" ? "#f1f8f2" : "#fff5f5",
+              border: `1px solid ${status.type === "success" ? "#2e7d32" : "var(--error-red)"}`,
+              borderRadius: "var(--border-radius)",
+              padding: "12px",
+              margin: "0 0 8px"
+            }}>
               {status.message}
             </p>
           )}
 
           <div className="modal-buttons" style={{ marginTop: "12px" }}>
-            <button type="button" className="btn-cancel" onClick={close}>
+            <button type="button" className="btn-outline" onClick={close}>
               Close
             </button>
-            <button type="submit" disabled={submitting}>
+            <button type="submit" className="btn-primary" disabled={submitting}>
               {submitting ? "Sharing..." : "Share"}
             </button>
           </div>

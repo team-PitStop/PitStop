@@ -21,21 +21,23 @@ function DeleteConfirmationModal({ isOpen, onClose, onConfirm, vehicleName, item
         modal from closing it (which would happen because clicks bubble up
         to the overlay).
       */}
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content" style={{ maxWidth: "480px" }} onClick={(e) => e.stopPropagation()}>
         <h3>Delete {itemType}?</h3>
 
-        <p>
+        <p style={{ color: "var(--text-light)" }}>
           Are you sure you want to delete{" "}
-          <strong>{vehicleName || `this ${itemType.toLowerCase()}`}</strong>?
+          <strong style={{ color: "var(--text-dark)" }}>
+            {vehicleName || `this ${itemType.toLowerCase()}`}
+          </strong>?
           <br />
           This action cannot be undone.
         </p>
 
         <div className="modal-buttons">
-          <button className="btn-cancel" onClick={onClose}>
+          <button className="btn-outline" onClick={onClose}>
             Cancel
           </button>
-          <button className="btn-delete" onClick={onConfirm}>
+          <button className="btn-danger" onClick={onConfirm}>
             Yes, Delete
           </button>
         </div>

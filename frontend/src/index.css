@@ -195,6 +195,7 @@ h1, h2, h3 {
     font-size: 0.9rem;
     margin-top: 6px;
   }
+}
 
 /* Modal styles used by multiple modal components */
 .modal-overlay {
@@ -227,4 +228,61 @@ h1, h2, h3 {
   .modal-buttons { justify-content: stretch; }
   .modal-buttons button { flex: 1; }
 }
+
+
+/* ============================================================
+   Auth pages (Login / Register)
+
+   A single FIU-blue gradient: lighter through the middle where the
+   card sits, deepening to near-black at the edges, so the white card
+   reads clearly without needing any pattern or texture behind it.
+   Scoped to .auth-page — every other page keeps the light MyFIU
+   background.
+   ============================================================ */
+
+.auth-page {
+  position: relative;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* Fixed, so the gradient covers the viewport regardless of how tall the
+   card is. z-index:-1 keeps it behind page content while still painting
+   over the body's grey. */
+.auth-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse 90% 75% at 50% 42%,
+    #1B4079 0%,
+    #123157 34%,
+    var(--fiu-blue) 62%,
+    #050D1C 100%);
+}
+
+/* Separate the card from the blue behind it. */
+.auth-page .card {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), 0 3px 10px rgba(0, 0, 0, 0.28);
+}
+
+/* The sign-up line sits outside the card, on the gradient. */
+.auth-footnote {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.auth-footnote a {
+  color: var(--fiu-gold-light);
+  font-weight: 600;
+}
+
+/* Centre the card in the viewport rather than letting it sit at the top
+   with dead space beneath. `safe` keeps the top of the card reachable if
+   the screen is shorter than the form; browsers that don't support it
+   drop the declaration and fall back to top-aligned. */
+body:has(.auth-page) main {
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
 }

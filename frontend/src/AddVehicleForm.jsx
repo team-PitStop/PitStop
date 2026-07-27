@@ -46,47 +46,54 @@ function AddVehicleForm() {
             .catch(() => alert("Could not add vehicle. Please try again."));
     };
 
+    const labelStyle = { display: "block", fontWeight: 600, color: "var(--fiu-blue)" };
+    const errorStyle = { display: "block", color: "var(--error-red)", fontSize: "0.85rem", marginTop: "-10px", marginBottom: "12px" };
+
     return (
-        <div style={{ padding: "40px" }}>
-            <h2>Add Vehicle</h2>
-            <form onSubmit={handleSubmit}>
-                <label>
+        <div style={{ maxWidth: "520px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", flexWrap: "wrap", marginBottom: "24px" }}>
+                <h2 style={{ margin: 0 }}>Add Vehicle</h2>
+                <button className="btn-outline" onClick={() => navigate("/garage")}>Back to Garage</button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="card">
+                <label style={labelStyle}>
                     Make *
                     <input type="text" name="make" value={vehicle.make} onChange={handleChange} />
-                    {errors.make && <span style={{ color: "red" }}>{errors.make}</span>}
                 </label>
+                {errors.make && <span style={errorStyle}>{errors.make}</span>}
 
-                <label>
+                <label style={labelStyle}>
                     Model *
                     <input type="text" name="model" value={vehicle.model} onChange={handleChange} />
-                    {errors.model && <span style={{ color: "red" }}>{errors.model}</span>}
                 </label>
+                {errors.model && <span style={errorStyle}>{errors.model}</span>}
 
-                <label>
+                <label style={labelStyle}>
                     Year *
                     <input type="number" name="year" value={vehicle.year} onChange={handleChange} />
-                    {errors.year && <span style={{ color: "red" }}>{errors.year}</span>}
                 </label>
+                {errors.year && <span style={errorStyle}>{errors.year}</span>}
 
-                <label>
+                <label style={labelStyle}>
                     Mileage *
                     <input type="number" name="mileage" value={vehicle.mileage} onChange={handleChange} />
-                    {errors.mileage && <span style={{ color: "red" }}>{errors.mileage}</span>}
                 </label>
+                {errors.mileage && <span style={errorStyle}>{errors.mileage}</span>}
 
-                <label>
+                <label style={labelStyle}>
                     Nickname (optional)
                     <input type="text" name="nickname" value={vehicle.nickname} onChange={handleChange} />
                 </label>
 
-                <label>
+                <label style={labelStyle}>
                     License Plate (optional)
                     <input type="text" name="licensePlate" value={vehicle.licensePlate} onChange={handleChange} />
                 </label>
 
-                <div style={{ display: "flex", gap: "12px", marginTop: "16px" }}>
-                    <button type="submit">Save</button>
-                    <button type="button" onClick={() => navigate("/garage")}>Cancel</button>
+                <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "8px" }}>
+                    <button type="submit" className="btn-primary">Save</button>
+                    <button type="button" className="btn-outline" onClick={() => navigate("/garage")}>Cancel</button>
                 </div>
             </form>
         </div>
