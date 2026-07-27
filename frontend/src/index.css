@@ -233,13 +233,11 @@ h1, h2, h3 {
 /* ============================================================
    Auth pages (Login / Register)
 
-   A calm Mediterranean coast drawn entirely in CSS — no images or
-   external assets. The scene lives in <AuthScene />, a decorative
-   aria-hidden tree, and is scoped to .auth-page so every other page
-   keeps the light MyFIU background.
-
-   Sizes are in vh/vw so the whole scene scales with the viewport
-   instead of drifting out of composition on small screens.
+   A single FIU-blue gradient: lighter through the middle where the
+   card sits, deepening to near-black at the edges, so the white card
+   reads clearly without needing any pattern or texture behind it.
+   Scoped to .auth-page — every other page keeps the light MyFIU
+   background.
    ============================================================ */
 
 .auth-page {
@@ -248,313 +246,35 @@ h1, h2, h3 {
   margin: 0 auto;
 }
 
-/* ---- Sky ------------------------------------------------------ */
-/* The container also paints the sky: periwinkle overhead easing to a
-   warm pale band at the horizon, with a soft low sun off to the right. */
-.auth-scene {
+/* Fixed, so the gradient covers the viewport regardless of how tall the
+   card is. z-index:-1 keeps it behind page content while still painting
+   over the body's grey. */
+.auth-page::before {
+  content: '';
   position: fixed;
   inset: 0;
   z-index: -1;
-  overflow: hidden;
-  background:
-    radial-gradient(circle 22vh at 74% 26%, rgba(255, 246, 222, 0.85), rgba(255, 240, 205, 0.28) 42%, transparent 72%),
-    linear-gradient(to bottom,
-      #87CEEB 0%,
-      #96D4EE 20%,
-      #B4E0F0 36%,
-      #D9EDEC 46%,
-      #FFF5E4 53%);
+  background: radial-gradient(ellipse 90% 75% at 50% 42%,
+    #1B4079 0%,
+    #123157 34%,
+    var(--fiu-blue) 62%,
+    #050D1C 100%);
 }
 
-/* ---- Clouds --------------------------------------------------- */
-/* Soft flattened ellipses. They drift very slowly — the scene should
-   feel unhurried, so a full pass takes minutes, not seconds. */
-.auth-scene::before {
-  content: '';
-  position: absolute;
-  left: -20%;
-  right: -20%;
-  top: 0;
-  height: 52%;
-  background-repeat: no-repeat;
-  background-image:
-    radial-gradient(ellipse 9vw 1.7vh at 18% 22%, rgba(255, 255, 255, 0.92), transparent 70%),
-    radial-gradient(ellipse 6vw 1.3vh at 23% 27%, rgba(255, 255, 255, 0.78), transparent 70%),
-    radial-gradient(ellipse 11vw 1.9vh at 52% 13%, rgba(255, 255, 255, 0.85), transparent 70%),
-    radial-gradient(ellipse 7vw 1.4vh at 58% 18%, rgba(255, 255, 255, 0.68), transparent 70%),
-    radial-gradient(ellipse 8vw 1.5vh at 82% 32%, rgba(255, 255, 255, 0.72), transparent 70%),
-    radial-gradient(ellipse 5vw 1.1vh at 37% 38%, rgba(255, 255, 255, 0.55), transparent 70%);
-  animation: scene-drift 240s linear infinite;
-}
-
-@keyframes scene-drift {
-  from { transform: translateX(0); }
-  to   { transform: translateX(12%); }
-}
-
-/* ---- Sea ------------------------------------------------------ */
-/* Turquoise at the horizon deepening to a calm blue nearer the shore.
-   The fine horizontal banding reads as still water, not waves. */
-.scene-sea {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 52%;
-  height: 21%;
-  background-image:
-    repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.14) 0 1px, transparent 1px 8px),
-    linear-gradient(to bottom, #A5DCEC 0%, #7EC8E3 30%, #5BA6DD 70%, #4A90D9 100%);
-}
-
-/* A sailboat, drifting. Two clipped triangles: sail and hull. */
-.scene-sea::before {
-  content: '';
-  position: absolute;
-  left: 30%;
-  top: 30%;
-  width: 0.85vh;
-  height: 1.7vh;
-  background: #FCFBF7;
-  clip-path: polygon(100% 0, 100% 100%, 0 100%);
-  animation: scene-sail 300s linear infinite alternate;
-}
-
-.scene-sea::after {
-  content: '';
-  position: absolute;
-  left: 29.4%;
-  top: calc(30% + 1.7vh);
-  width: 1.7vh;
-  height: 0.4vh;
-  background: #F3EFE6;
-  border-radius: 0 0 50% 50%;
-  animation: scene-sail 300s linear infinite alternate;
-}
-
-@keyframes scene-sail {
-  from { transform: translateX(0); }
-  to   { transform: translateX(9vw); }
-}
-
-/* ---- Headland ------------------------------------------------- */
-/* A sage-green promontory reaching into the water on the right, with a
-   lower spur on the left, so the coastline frames the card. */
-.scene-headland {
-  position: absolute;
-  right: -6%;
-  top: 38%;
-  width: 42%;
-  height: 20%;
-  background: linear-gradient(to bottom, #A3BE91 0%, #8FAF7E 60%, #7E9C6E 100%);
-  border-radius: 58% 42% 0 0 / 78% 88% 0 0;
-}
-
-.scene-headland::before {
-  content: '';
-  position: absolute;
-  left: -78%;
-  top: 42%;
-  width: 70%;
-  height: 62%;
-  background: linear-gradient(to bottom, #B3C9A2, #93B282);
-  border-radius: 50% 50% 0 0 / 82% 76% 0 0;
-}
-
-/* Far spur on the left, hazed back so it reads as distance. */
-.scene-headland::after {
-  content: '';
-  position: absolute;
-  left: -190%;
-  top: 55%;
-  width: 95%;
-  height: 46%;
-  background: linear-gradient(to bottom, #BCCFAE, #A6BE95);
-  border-radius: 46% 54% 0 0 / 74% 70% 0 0;
-  opacity: 0.85;
-}
-
-/* ---- Village -------------------------------------------------- */
-/* Each building is one background layer: a terracotta roof band above a
-   soft-white wall, sized and placed individually so the cluster looks
-   settled rather than tiled. */
-.scene-village {
-  position: absolute;
-  right: 4%;
-  top: 43%;
-  width: 22vw;
-  height: 9vh;
-  background-repeat: no-repeat;
-  /* Roofs and walls are separate layers rather than two stops of one
-     gradient: a single gradient leaves a hairline seam at the colour
-     stop once the tile lands on fractional pixels, and separate layers
-     also let each roof overhang its wall the way terracotta does.
-     Roofs are listed first so they paint over the wall tops. */
-  background-image:
-    linear-gradient(#C97B57, #B96745), linear-gradient(#C4714E, #B4603F),
-    linear-gradient(#CE8360, #BC6E4C), linear-gradient(#C06B49, #AF5C3C),
-    linear-gradient(#CB7C58, #B96745), linear-gradient(#C4714E, #B4603F),
-    linear-gradient(#FDFBF6, #F1ECE1), linear-gradient(#FBF8F2, #EFEAE0),
-    linear-gradient(#FDFBF6, #F1ECE1), linear-gradient(#F7F3EB, #EBE6DB),
-    linear-gradient(#FBF8F2, #EFEAE0), linear-gradient(#F7F3EB, #EBE6DB);
-  background-size:
-    3.0vh 0.75vh, 2.5vh 0.65vh, 3.4vh 0.85vh,
-    2.4vh 0.60vh, 2.8vh 0.70vh, 2.3vh 0.60vh,
-    2.4vh 2.6vh,  1.9vh 2.0vh,  2.8vh 3.2vh,
-    1.8vh 1.9vh,  2.2vh 2.4vh,  1.7vh 1.8vh;
-  background-position:
-    left 0.7vw bottom 2.5vh, left 3.9vw bottom 1.9vh, left 7.2vw bottom 3.1vh,
-    left 11.1vw bottom 1.8vh, left 14.3vw bottom 2.3vh, left 17.6vw bottom 1.7vh,
-    left 1.0vw bottom 0,     left 4.2vw bottom 0,     left 7.5vw bottom 0,
-    left 11.4vw bottom 0,    left 14.6vw bottom 0,    left 17.9vw bottom 0;
-}
-
-/* ---- Foreground land ------------------------------------------ */
-/* Warm dusty tan, with a gently curved top edge where it meets the
-   water so the shoreline is not a straight cut. */
-.scene-land {
-  position: absolute;
-  left: -6%;
-  right: -6%;
-  top: 70%;
-  bottom: 0;
-  background: linear-gradient(to bottom, #C9AE88 0%, #C4A882 22%, #B2966F 70%, #A2865F 100%);
-  border-radius: 44% 56% 0 0 / 12% 9% 0 0;
-  overflow: hidden;
-}
-
-/* ---- Road ----------------------------------------------------- */
-/* A very large circle showing only its top arc: the thick top border
-   becomes a road curving gently across the headland. Rotating it a
-   little keeps the curve asymmetric, which reads as winding rather
-   than as a perfect arc. */
-.scene-road {
-  position: absolute;
-  left: -36%;
-  top: 34%;
-  width: 170%;
-  height: 580%;
-  border-radius: 50%;
-  border-top: 2.3vh solid #DDD6C7;
-  transform: rotate(-6deg);
-}
-
-/* Soft shoulder, so the road is not a hard band on the hillside. */
-.scene-road::before {
-  content: '';
-  position: absolute;
-  left: -1%;
-  right: -1%;
-  top: -3.1vh;
-  height: 4vh;
-  border-radius: 50%;
-  border-top: 0.8vh solid rgba(196, 168, 130, 0.5);
-}
-
-/* ---- Trees ---------------------------------------------------- */
-/* One cypress, cloned along the roadside with box-shadow. Spread
-   varies each copy's size so they are not identical. */
-.scene-trees {
-  position: absolute;
-  left: 12%;
-  top: 45%;
-  width: 1.25vh;
-  height: 5vh;
-  background: #6B7C5C;
-  border-radius: 50% 50% 42% 42% / 62% 62% 38% 38%;
-  box-shadow:
-     8vw -1.5vh 0 -0.2vh  #6B7C5C,
-    17vw -2.6vh 0  0.1vh  #67785A,
-    27vw -3.3vh 0 -0.3vh  #6B7C5C,
-    37vw -3.6vh 0  0      #718353,
-    47vw -3.4vh 0 -0.35vh #6B7C5C,
-    58vw -2.7vh 0 -0.15vh #67785A,
-    69vw -1.6vh 0 -0.4vh  #6B7C5C,
-    79vw -0.3vh 0 -0.25vh #718353;
-}
-
-/* ---- Car ------------------------------------------------------ */
-/* A small hatchback ambling along the coast road. The drive is long and
-   linear — no easing, nothing hurried. */
-.scene-car {
-  position: absolute;
-  left: 9%;
-  top: 66%;
-  width: 3.4vh;
-  height: 1.35vh;
-  background: #D9584B;
-  border-radius: 0.35vh 0.5vh 0.25vh 0.25vh;
-  box-shadow: 0 0.18vh 0.35vh rgba(110, 90, 60, 0.45);
-  animation: scene-drive 90s linear infinite;
-}
-
-/* Cabin and glass. */
-.scene-car::before {
-  content: '';
-  position: absolute;
-  left: 22%;
-  top: -0.8vh;
-  width: 1.75vh;
-  height: 0.92vh;
-  background: #D9584B;
-  border-radius: 0.45vh 0.35vh 0 0;
-  box-shadow: inset -0.3vh 0.16vh 0 rgba(150, 196, 214, 0.9);
-}
-
-/* Wheels. */
-.scene-car::after {
-  content: '';
-  position: absolute;
-  left: 16%;
-  bottom: -0.22vh;
-  width: 0.58vh;
-  height: 0.58vh;
-  background: #4A4741;
-  border-radius: 50%;
-  box-shadow: 1.85vh 0 0 0 #4A4741;
-}
-
-/* Follows the road's arc: across, rising slightly, easing away into the
-   distance as it nears the headland. */
-@keyframes scene-drive {
-  0%   { transform: translate(0, 0);            opacity: 0; }
-  5%   { opacity: 1; }
-  25%  { transform: translate(21vw, -5vh); }
-  50%  { transform: translate(43vw, -9.2vh); }
-  75%  { transform: translate(64.5vw, -10.3vh); }
-  95%  { opacity: 1; }
-  100% { transform: translate(86vw, -6.3vh);    opacity: 0; }
-}
-
-/* Nothing here is meaningful, so stop all of it when motion is not
-   wanted. The scene is composed to look settled when still. */
-@media (prefers-reduced-motion: reduce) {
-  .auth-scene::before,
-  .scene-sea::before,
-  .scene-sea::after,
-  .scene-car {
-    animation: none;
-  }
-}
-
-/* ---- Card and footnote ---------------------------------------- */
-/* The scene is bright, so the card is separated by a deep soft shadow
-   rather than by contrast alone. */
+/* Separate the card from the blue behind it. */
 .auth-page .card {
-  box-shadow: 0 22px 55px rgba(46, 76, 96, 0.30), 0 4px 12px rgba(46, 76, 96, 0.18);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), 0 3px 10px rgba(0, 0, 0, 0.28);
 }
 
-/* The sign-up line sits outside the card on pale sky, so it takes the
-   deep blue of the scene rather than the white used on the old dark
-   background. */
+/* The sign-up line sits outside the card, on the gradient. */
 .auth-footnote {
   text-align: center;
-  color: #2C5570;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .auth-footnote a {
-  color: #1C6B93;
-  font-weight: 700;
+  color: var(--fiu-gold-light);
+  font-weight: 600;
 }
 
 /* Centre the card in the viewport rather than letting it sit at the top
