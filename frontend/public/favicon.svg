@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Pit Stop logo">
+  <!-- Pit Stop's own palette: FIU Panther Blue #081E3F, Roary Gold #B6862C, white; sharp MyFIU-style corners -->
+  <defs>
+    <radialGradient id="panther" cx="50%" cy="38%" r="70%">
+      <stop offset="0" stop-color="#15315e"/>
+      <stop offset="1" stop-color="#081E3F"/>
+    </radialGradient>
+  </defs>
+  <rect x="10" y="10" width="180" height="180" rx="8" fill="url(#panther)"/>
+  <!-- gold top bar, like the login card -->
+  <rect x="10" y="10" width="180" height="8" rx="4" fill="#B6862C"/>
+
+  <!-- tire with tread -->
+  <circle cx="100" cy="86" r="48" fill="#ffffff"/>
+  <circle cx="100" cy="86" r="48" fill="none" stroke="#081E3F" stroke-width="3" stroke-dasharray="5 7"/>
+  <circle cx="100" cy="86" r="36" fill="#081E3F"/>
+
+  <!-- gold wheel with five lug nuts -->
+  <circle cx="100" cy="86" r="26" fill="#B6862C"/>
+  <circle cx="100" cy="86" r="9" fill="#081E3F"/>
+  <g fill="#081E3F">
+    <circle cx="100" cy="70" r="3.5"/>
+    <circle cx="115.2" cy="81.1" r="3.5"/>
+    <circle cx="109.4" cy="98.9" r="3.5"/>
+    <circle cx="90.6" cy="98.9" r="3.5"/>
+    <circle cx="84.8" cy="81.1" r="3.5"/>
+  </g>
+
+  <!-- wordmark: PIT in white, STOP in gold, heavy like the navbar -->
+  <text x="100" y="172" text-anchor="middle" font-family="'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="26" font-weight="900" letter-spacing="1">
+    <tspan fill="#ffffff">PIT</tspan><tspan fill="#B6862C">STOP</tspan>
+  </text>
+</svg>
